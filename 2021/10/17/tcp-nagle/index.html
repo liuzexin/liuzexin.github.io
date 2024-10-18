@@ -1,0 +1,132 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>TCP Nagle 与TCP Delayed ACK性能调研 | Eddison</title><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/liuzexin.github.io/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/liuzexin.github.io/favicon.ico"><link rel="apple-touch-icon" href="/liuzexin.github.io/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/liuzexin.github.io/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">TCP Nagle 与TCP Delayed ACK性能调研</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流'</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">TCP Nagle 与TCP Delayed ACK性能调研</h1><div class="post-meta">2021-10-17</div><div class="post-content"><p>[toc]</p>
+<h1 id="1-进程（Process）"><a href="#1-进程（Process）" class="headerlink" title="1. 进程（Process）"></a>1. 进程（Process）</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>进程是操作系统中运行的一个独立程序实例。每个进程都有自己的内存空间、文件描述符和其他资源。</p>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
+<li><strong>独立性</strong>：进程之间是独立的，一个进程的崩溃不会影响其他进程。</li>
+<li><strong>资源开销</strong>：进程的创建和销毁开销较大，因为需要分配和回收大量的系统资源。</li>
+<li><strong>内存空间</strong>：每个进程有独立的内存空间，进程间通信（IPC）需要通过特定的机制（如管道、消息队列、共享内存等）。</li>
+<li><strong>上下文切换</strong>：进程的上下文切换开销较大，因为需要保存和恢复大量的状态信息。</li>
+</ul>
+<h2 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h2><p>适用于需要高隔离性和独立性的任务，如不同的应用程序或服务。</p>
+<h1 id="2-线程（Thread）"><a href="#2-线程（Thread）" class="headerlink" title="2. 线程（Thread）"></a>2. 线程（Thread）</h1><h2 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h2><p>线程是进程中的一个执行单元，一个进程可以包含多个线程。线程共享进程的内存空间和资源。</p>
+<h2 id="特点-1"><a href="#特点-1" class="headerlink" title="特点"></a>特点</h2><ul>
+<li><strong>共享资源</strong>：同一进程内的线程共享内存和文件描述符等资源。</li>
+<li><strong>轻量级</strong>：线程的创建和销毁开销较小，相比进程更轻量。</li>
+<li><strong>通信方便</strong>：线程间通信（如共享变量）比进程间通信更简单和高效。</li>
+<li><strong>上下文切换</strong>：线程的上下文切换开销较小，因为共享同一进程的资源。</li>
+</ul>
+<h2 id="适用场景-1"><a href="#适用场景-1" class="headerlink" title="适用场景"></a>适用场景</h2><p>适用于需要高效并发执行的任务，如多线程服务器、并行计算等。</p>
+<h1 id="3-协程（Coroutine）"><a href="#3-协程（Coroutine）" class="headerlink" title="3. 协程（Coroutine）"></a>3. 协程（Coroutine）</h1><h2 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h2><p>协程是一种比线程更轻量级的并发单元。协程在用户态实现，由程序自身控制调度，而不是由操作系统内核调度。</p>
+<h2 id="特点-2"><a href="#特点-2" class="headerlink" title="特点"></a>特点</h2><ul>
+<li><strong>轻量级</strong>：协程的创建和销毁开销极小，通常只需分配少量的栈空间。</li>
+<li><strong>非抢占式调度</strong>：协程的切换由程序显式控制，不会被操作系统抢占。</li>
+<li><strong>高效</strong>：协程的上下文切换开销极小，因为只需保存和恢复少量的状态信息。</li>
+<li><strong>共享资源</strong>：协程可以共享同一线程的资源，但需要显式管理同步和互斥。</li>
+</ul>
+<h2 id="适用场景-2"><a href="#适用场景-2" class="headerlink" title="适用场景"></a>适用场景</h2><p>适用于需要大量并发但不需要多核并行的任务，如异步 I&#x2F;O 操作、事件驱动编程等。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>进程（Process）</th>
+<th>线程（Thread）</th>
+<th>协程（Coroutine）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>独立性</td>
+<td>高</td>
+<td>低</td>
+<td>低</td>
+</tr>
+<tr>
+<td>资源开销</td>
+<td>高</td>
+<td>中</td>
+<td>低</td>
+</tr>
+<tr>
+<td>内存空间</td>
+<td>独立</td>
+<td>共享</td>
+<td>共享</td>
+</tr>
+<tr>
+<td>通信方式</td>
+<td>IPC</td>
+<td>共享变量</td>
+<td>共享变量</td>
+</tr>
+<tr>
+<td>上下文切换开销</td>
+<td>高</td>
+<td>中</td>
+<td>低</td>
+</tr>
+<tr>
+<td>调度方式</td>
+<td>内核调度</td>
+<td>内核调度</td>
+<td>用户态调度</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>高隔离性任务</td>
+<td>高效并发任务</td>
+<td>大量并发任务</td>
+</tr>
+</tbody></table>
+<p>通过理解这些区别，你可以根据具体的应用场景选择合适的并发编程模型，以实现最佳的性能和资源利用。</p>
+<h2 id="系统调用的进程"><a href="#系统调用的进程" class="headerlink" title="系统调用的进程"></a>系统调用的进程</h2><p>系统调用过程通常称为特权模式切换，而不是上下文切换。但实际上，系统调用过程中，CPU 的上下文切换还是无法避免的。<br>一次系统调用的过程，其实是发生了两次 CPU 上下文切换。</p>
+<p>进程是操作系统中资源分配的基本单位。每个进程在创建时，操作系统会为其分配一系列资源，以便其能够独立运行。以下是进程主要分配的资源：</p>
+<h1 id="1-内存空间"><a href="#1-内存空间" class="headerlink" title="1. 内存空间"></a>1. 内存空间</h1><h2 id="代码段（Text-Segment）"><a href="#代码段（Text-Segment）" class="headerlink" title="代码段（Text Segment）"></a>代码段（Text Segment）</h2><p>存储进程的可执行代码。代码段是只读的，防止程序意外修改自身的指令。</p>
+<h2 id="数据段（Data-Segment）"><a href="#数据段（Data-Segment）" class="headerlink" title="数据段（Data Segment）"></a>数据段（Data Segment）</h2><p>存储全局变量和静态变量。数据段在程序运行期间可以被修改。</p>
+<h2 id="堆（Heap）"><a href="#堆（Heap）" class="headerlink" title="堆（Heap）"></a>堆（Heap）</h2><p>用于动态内存分配。堆的大小可以在程序运行期间动态调整，通常通过 <code>malloc</code>、<code>free</code> 等函数进行管理。</p>
+<h2 id="栈（Stack）"><a href="#栈（Stack）" class="headerlink" title="栈（Stack）"></a>栈（Stack）</h2><p>用于存储函数调用的上下文，包括局部变量、函数参数和返回地址。栈的大小通常是固定的，但可以在某些操作系统中进行调整。</p>
+<h1 id="2-文件描述符（File-Descriptors）"><a href="#2-文件描述符（File-Descriptors）" class="headerlink" title="2. 文件描述符（File Descriptors）"></a>2. 文件描述符（File Descriptors）</h1><p>进程可以打开文件、管道、网络连接等，每个打开的文件或资源都会分配一个文件描述符。文件描述符是一个整数，用于标识进程打开的文件或资源。</p>
+<h1 id="3-虚拟内存地址空间"><a href="#3-虚拟内存地址空间" class="headerlink" title="3. 虚拟内存地址空间"></a>3. 虚拟内存地址空间</h1><p>每个进程都有独立的虚拟内存地址空间，操作系统通过内存管理单元（MMU）将虚拟地址映射到物理内存地址。这种机制提供了内存保护，防止进程之间互相干扰。</p>
+<h1 id="4-进程控制块（Process-Control-Block-PCB）"><a href="#4-进程控制块（Process-Control-Block-PCB）" class="headerlink" title="4. 进程控制块（Process Control Block, PCB）"></a>4. 进程控制块（Process Control Block, PCB）</h1><p>PCB 是操作系统用来管理进程的一个数据结构，包含了进程的各种信息，包括：</p>
+<ul>
+<li><strong>进程标识符（PID）</strong>：唯一标识一个进程。</li>
+<li><strong>进程状态</strong>：如运行、就绪、阻塞等。</li>
+<li><strong>程序计数器（PC）</strong>：指示下一条将要执行的指令地址。</li>
+<li><strong>CPU 寄存器</strong>：保存进程的寄存器状态。</li>
+<li><strong>内存管理信息</strong>：如页表、段表等。</li>
+<li><strong>I&#x2F;O 状态信息</strong>：如打开的文件列表、I&#x2F;O 请求等。</li>
+<li><strong>调度信息</strong>：如优先级、调度队列指针等。</li>
+</ul>
+<h1 id="5-安全属性"><a href="#5-安全属性" class="headerlink" title="5. 安全属性"></a>5. 安全属性</h1><p>包括进程的用户 ID（UID）、组 ID（GID）等，用于访问控制和权限管理。</p>
+<h1 id="6-信号处理"><a href="#6-信号处理" class="headerlink" title="6. 信号处理"></a>6. 信号处理</h1><p>进程可以接收和处理信号。操作系统为每个进程维护一个信号处理表，记录进程对各种信号的处理方式（如忽略、捕获、默认处理等）。</p>
+<h1 id="7-资源限制"><a href="#7-资源限制" class="headerlink" title="7. 资源限制"></a>7. 资源限制</h1><p>操作系统可以为每个进程设置资源限制，如最大文件大小、最大内存使用量、最大 CPU 时间等。这些限制通常通过 <code>ulimit</code> 或 <code>setrlimit</code> 等系统调用进行设置。</p>
+<h1 id="8-其他资源"><a href="#8-其他资源" class="headerlink" title="8. 其他资源"></a>8. 其他资源</h1><ul>
+<li><strong>环境变量</strong>：进程的环境变量，如 <code>PATH</code>、<code>HOME</code> 等。</li>
+<li><strong>工作目录</strong>：进程的当前工作目录。</li>
+<li><strong>时钟和计时器</strong>：进程可以使用系统时钟和计时器进行时间管理。</li>
+</ul>
+<h1 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h1><p>进程在操作系统中是一个独立的执行单元，操作系统为其分配了各种资源以确保其能够独立运行和管理。这些资源包括内存空间、文件描述符、虚拟内存地址空间、进程控制块、安全属性、信号处理、资源限制以及其他相关资源。理解这些资源的分配和管理对于深入理解操作系统和并发编程非常重要</p>
+<p>线程是操作系统中用于并发执行的基本单位。每个线程在创建时，操作系统会为其分配一系列资源，以便其能够独立运行。以下是线程主要使用的资源：</p>
+<h1 id="1-栈（Stack）"><a href="#1-栈（Stack）" class="headerlink" title="1. 栈（Stack）"></a>1. 栈（Stack）</h1><h2 id="栈空间"><a href="#栈空间" class="headerlink" title="栈空间"></a>栈空间</h2><p>每个线程都有自己的栈空间，用于存储局部变量、函数调用链和返回地址。栈的大小通常在创建线程时指定，并且在运行时是固定的。</p>
+<h1 id="2-寄存器（Registers）"><a href="#2-寄存器（Registers）" class="headerlink" title="2. 寄存器（Registers）"></a>2. 寄存器（Registers）</h1><h2 id="寄存器状态"><a href="#寄存器状态" class="headerlink" title="寄存器状态"></a>寄存器状态</h2><p>线程在切换时需要保存和恢复 CPU 寄存器的状态，包括程序计数器（PC）、栈指针（SP）和其他通用寄存器。这些状态信息通常保存在线程控制块（TCB）中。</p>
+<h1 id="3-线程控制块（Thread-Control-Block-TCB）"><a href="#3-线程控制块（Thread-Control-Block-TCB）" class="headerlink" title="3. 线程控制块（Thread Control Block, TCB）"></a>3. 线程控制块（Thread Control Block, TCB）</h1><h2 id="控制信息"><a href="#控制信息" class="headerlink" title="控制信息"></a>控制信息</h2><p>TCB 是操作系统用来管理线程的一个数据结构，包含了线程的各种信息，包括：</p>
+<ul>
+<li><strong>线程标识符（TID）</strong>：唯一标识一个线程。</li>
+<li><strong>线程状态</strong>：如运行、就绪、阻塞等。</li>
+<li><strong>程序计数器（PC）</strong>：指示下一条将要执行的指令地址。</li>
+<li><strong>栈指针（SP）</strong>：指向线程的栈顶。</li>
+<li><strong>寄存器状态</strong>：保存线程的寄存器状态。</li>
+<li><strong>优先级</strong>：线程的优先级信息。</li>
+<li><strong>调度信息</strong>：如调度队列指针等。</li>
+</ul>
+<h1 id="4-共享资源"><a href="#4-共享资源" class="headerlink" title="4. 共享资源"></a>4. 共享资源</h1><h2 id="共享内存"><a href="#共享内存" class="headerlink" title="共享内存"></a>共享内存</h2><p>同一进程内的线程共享进程的内存空间，包括全局变量、堆和代码段。这使得线程之间的通信和数据共享非常高效，但也需要显式管理同步和互斥。</p>
+<h2 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h2><p>线程共享进程的文件描述符表，可以访问和操作相同的文件、管道和网络连接。</p>
+<h1 id="5-线程局部存储（Thread-Local-Storage-TLS）"><a href="#5-线程局部存储（Thread-Local-Storage-TLS）" class="headerlink" title="5. 线程局部存储（Thread Local Storage, TLS）"></a>5. 线程局部存储（Thread Local Storage, TLS）</h1><h2 id="局部变量"><a href="#局部变量" class="headerlink" title="局部变量"></a>局部变量</h2><p>线程可以有自己的局部存储，用于存储线程特有的数据。TLS 提供了一种机制，使得每个线程可以有独立的变量副本，避免了共享数据的竞争。</p>
+<h1 id="6-调度器（Scheduler）"><a href="#6-调度器（Scheduler）" class="headerlink" title="6. 调度器（Scheduler）"></a>6. 调度器（Scheduler）</h1><h2 id="调度信息"><a href="#调度信息" class="headerlink" title="调度信息"></a>调度信息</h2><p>线程的调度通常由操作系统内核的调度器管理。调度器负责管理线程的创建、销毁、切换和调度。调度器需要一些数据结构来管理线程队列、优先级等信息。</p>
+<h1 id="7-信号处理"><a href="#7-信号处理" class="headerlink" title="7. 信号处理"></a>7. 信号处理</h1><h2 id="信号处理表"><a href="#信号处理表" class="headerlink" title="信号处理表"></a>信号处理表</h2><p>线程可以接收和处理信号。操作系统为每个线程维护一个信号处理表，记录线程对各种信号的处理方式（如忽略、捕获、默认处理等）。</p>
+<h1 id="8-其他资源-1"><a href="#8-其他资源-1" class="headerlink" title="8. 其他资源"></a>8. 其他资源</h1><h2 id="运行时库"><a href="#运行时库" class="headerlink" title="运行时库"></a>运行时库</h2><p>线程通常依赖于特定的运行时库或框架，这些库提供了线程的创建、销毁、同步和通信等基本功能。运行时库本身也需要一些资源来管理线程。</p>
+<h1 id="资源管理的特点"><a href="#资源管理的特点" class="headerlink" title="资源管理的特点"></a>资源管理的特点</h1><ul>
+<li><strong>共享资源</strong>：线程共享同一进程的内存空间和文件描述符，通信和数据共享非常高效。</li>
+<li><strong>独立栈</strong>：每个线程有自己的栈空间，用于存储局部变量和函数调用链。</li>
+<li><strong>轻量级</strong>：线程的创建和销毁开销较小，相比进程更轻量。</li>
+<li><strong>内核调度</strong>：线程的调度和切换由操作系统内核管理，上下文切换开销较小。</li>
+</ul>
+<h1 id="总结-2"><a href="#总结-2" class="headerlink" title="总结"></a>总结</h1><p>线程是操作系统中用于并发执行的基本单位，主要使用的资源包括栈空间、寄存器状态、线程控制块（TCB）、共享内存、文件描述符、线程局部存储（TLS）、调度器和信号处理表。与进程相比，线程的资源需求和管理方式更加高效和灵活，适用于需要高效并发执行的任务，如多线程服务器和并行计算。理解线程的资源管理有助于更好地利用线程的优势，实现高效的并发编程。</p>
+</div><div class="tags"><ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" rel="tag">线程,进程,协程</a></li></ul></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/2024/10/17/algorithm/">algorithm</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/10/17/algorithm/">algorithm</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2021/10/17/tcp-nagle/">TCP Nagle 与TCP Delayed ACK性能调研</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/liuzexin.github.io/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
