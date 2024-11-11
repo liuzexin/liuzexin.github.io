@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>读More Effective c++ 笔记 | Eddison</title><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/liuzexin.github.io/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/liuzexin.github.io/favicon.ico"><link rel="apple-touch-icon" href="/liuzexin.github.io/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/liuzexin.github.io/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">读More Effective c++ 笔记</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流'</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">读More Effective c++ 笔记</h1><div class="post-meta">2024-10-20</div><div class="post-content"><!--toc-->
+<h2 id="03-尽可能使用const">03.尽可能使用const</h2>
+<blockquote>
+<p>2023-04-22 16:55  |  页码：47<br>
+对于单纯常量,最好以const对象或cnums替换#defines。<br>
+对于形似函数的宏(macros),最好改用inline函数替换#defines</p>
+</blockquote>
+<h2 id="04-确定对象初始化">04.确定对象初始化</h2>
+<blockquote>
+<p>2023-04-22 16:56  |  页码：56<br>
+将某些东西声明为const可帮助编译器侦测出错误用法。const可被施加于任<br>
+何作用域内的对象、函数参数、函数返回类型、成员函数本体。<br>
+编译器强制实施bitwise constness,但你编写程序时应该使用&quot;概念上的常量性&quot;(conceptual constness)。当const和non-const成员函数有着实质等价的实现时,令non-const版本调用const版本可避免代码重复。</p>
+</blockquote>
+<p>这里需要注意，const可被const_cast函数拒绝掉</p>
+<h2 id="06-不自动生成的函数，就明确拒绝">06.不自动生成的函数，就明确拒绝</h2>
+<blockquote>
+<p>2023-04-22 16:57  |  页码：67<br>
+编译器可以暗自为class创建default构造函数、copy构造函数、copyassignment操作符,以及析构函数。</p>
+</blockquote>
+<p>需要留意，如果不需要以上的默认函数请明确指出，使用=delete。</p>
+<blockquote>
+<p>2023-04-22 16:59  |  页码：69<br>
+为驳回编译器自动(暗自)提供的机能,可将相应的成员函数声明为private并且不予实现。使用像Uncopyable这样的base class也是一种做法。</p>
+</blockquote>
+<h2 id="07-多态基类声明virtual析构函数">07.多态基类声明virtual析构函数</h2>
+<blockquote>
+<p>2023-04-22 17:07  |  页码：70</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:<span class="built_in">TimeKeeper</span>();</span><br><span class="line">~<span class="built_in">TimeKeeper</span>();</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AtomicClock</span>:<span class="function"><span class="keyword">public</span> <span class="title">TimeKeeper</span><span class="params">(...)</span></span>;<span class="comment">//原子钟</span></span><br><span class="line"><span class="comment">//水钟</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">WaterClock</span>: <span class="keyword">public</span> TimeKeeper &#123; .. &#125;;</span><br><span class="line"><span class="comment">//腕表</span></span><br><span class="line">TimeKeeper* ptk = <span class="built_in">getTimeKeeper</span>();<span class="comment">//获得一个动态分配对象。//运用它...</span></span><br><span class="line"><span class="comment">//释放它,避免资源泄漏。</span></span><br><span class="line"><span class="keyword">delete</span> ptk;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>2023-04-22 17:06  |  页码：70<br>
+问题出在getTimeKeeper返回的指针指向一个derived class对象(例如AtomicClock),而那个对象却经由一个base class指针(例如一个TimeKeeper*指针)被删除,而目前的base class(TimeKeeper)有个non-virtual析构函数。</p>
+</blockquote>
+<blockquote>
+<p>2023-04-22 17:06  |  页码：71</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">TimeKeeper</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:<span class="built_in">TimeKeeper</span>();</span><br><span class="line"><span class="keyword">virtual</span> ~<span class="built_in">TimeKeeper</span>();</span><br><span class="line">&#125;;</span><br><span class="line">TimeKeeper* ptk = <span class="built_in">getTimeKeeper</span>();<span class="comment">//现在,行为正确。</span></span><br><span class="line"><span class="keyword">delete</span> ptk;</span><br></pre></td></tr></table></figure>
+<p><strong>任何class带有virtual函数的都需要带有对应的virtual析构函数。</strong><br>
+也就是子类解构的时候会自动调用父类.</p>
+<blockquote>
+<p>polymorphic(带多态性质的)base classes应该声明一个virtual析构数。<br>
+如果class带有任何virtual函数,它就应该拥有一个virtual析构函数。Classes的设计目的如果不是作为base classes使用,或不是为了具备多态性(polymorphically),就不该声明virtual析构函数。</p>
+</blockquote>
+<h2 id="09-不要在析构构造函数中调用virtual函数">09.不要在析构构造函数中调用virtual函数</h2>
+<blockquote>
+<p>在构造和析构期间不要调用virtual函数,因为这类调用从不下降至derived class(比起当前执行构造函数和析构函数的那层)。</p>
+</blockquote>
+<h2 id="10-operator-返回-reference-to-this">10.operator= 返回 reference to *this</h2>
+<blockquote>
+<p>页码：83<br>
+令赋值(assignment)操作符返回一个referenceto*this</p>
+</blockquote>
+<h2 id="12-复制对象勿忘其每一个成分">12.复制对象勿忘其每一个成分</h2>
+<blockquote>
+<p>页码：90<br>
+Copying函数应该确保复制&quot;对象内的所有成员变量&quot;及&quot;所有base class成分&quot;。不要尝试以某个copying函数实现另一个copying函数。应该将共同机能放进第三个函数中,并由两个coping函数共同调用。</p>
+</blockquote>
+<h2 id="13-以对象管理资源">13. 以对象管理资源</h2>
+<blockquote>
+<p>页码：93<br>
+获得资源后立刻放进管理对象(managing object)内。以上代码中createInvestment返回的资源被当做其管理者auto_ptr的初值。实际上&quot;以对象管理资源&quot;的观念常被称为&quot;资源取得时机便是初始化时机&quot;(Resource)Acquisition Is Initialization;RAll),因为我们几乎总是在获得一笔资源,后于同一语句内以它初始化某个管理对象。有时候获得的资源被拿来赋值(而非初始化某个管理对象,但不论哪一种做法,每一笔资源都在获得的同同时立刻被放进管理对象中。管理对象(managing object)运用析构函数确保资源被释放。不论控制流如何离开区块,一旦对象被销毁(例如当对象离开作用域)其析构函数自然会被自动调用,于是资源被释放。如果资源释放动作可能导致抛出异常,事情变得有点棘手,但条款8已经能够解决这个问题,所以这里我们也就不多操心了。</p>
+</blockquote>
+<h2 id="14-资源管理类中小心coping行为">14 资源管理类中小心coping行为</h2>
+<blockquote>
+<p>页码：96<br>
+为防止资源泄漏,请使用RAII对象,它们在构造函数中获得资源并在析构函数中释放资源。两个常被使用的RAll classes分别是trl::shared_ptr和auto_ptr。前者通常是较佳选择,因为其copy行为比较直观。若选择auto_ptr,复制动作会使它(被复制物)指向null。</p>
+</blockquote>
+<h2 id="15-对原始资源的访问">15 对原始资源的访问</h2>
+<blockquote>
+<p>页码：99<br>
+复制RAII对象必须一并复制它所管理的资源,所以资源的copying行为决定RAII对象的copying行为。普遍而常见的RAII class copying行为是:抑制copying、施行引用计数法(reference counting)。不过其他行为也都可能被实现</p>
+</blockquote>
+<h2 id="16-承兑使用new和delete是要采取相同形式">16.承兑使用new和delete是要采取相同形式</h2>
+<blockquote>
+<p>页码：104<br>
+std::string<em>stringPtrl=new std::string;std::string</em> stringPtr2=new std::string[100];//删除一个对象delete stringPtrl;//删除一个由对象组成的数组<br>
+delete[]stringPtr2;</p>
+</blockquote>
+<blockquote>
+<p>页码：105<br>
+如果你在new表达式中使用[],必须在相应的delete表达式中也使用[]。如果你在new表达式中不使用[],一定不要在相应的delete表达式中使用[]</p>
+</blockquote>
+<h2 id="17-独立语句将new对象植入智能指针">17.独立语句将new对象植入智能指针</h2>
+<blockquote>
+<p>页码：106<br>
+processWidget(std::trl::shared_ptr<Widget>(new Widget),priority());令人惊讶的是,虽然我们在此使用&quot;对象管理式资源&quot;(objcoct-managingresources),上述调用却可能泄漏资源。稍后我再详加解释。</p>
+</blockquote>
+<blockquote>
+<p>页码：107<br>
+std::trl::shared_ptr<Widget>pw(new Widget);智能指针存储//newed所得对象。//这个调用动作绝不至于造成泄漏。processWidget (pw, priority());</p>
+</blockquote>
+<blockquote>
+<p>页码：107<br>
+以独立语句将newed对象存储于(置入)智能指针内。如果不这样做,一旦异常被抛出,有可能导致难以察觉的资源泄漏。</p>
+</blockquote>
+<h2 id="19-设计class犹如设计type">19.设计class犹如设计type</h2>
+<blockquote>
+<p>页码：114<br>
+新type的对象应该如何被创建和销毁?这会影响到你的class的构造函;数和析构函数以及内存分配函数和释放函数(operator new,operatornew[],opperator delete和operatordelete[]-见第8章)的设计,当然前提是如果你打算撰写它们。对象的初始化和对象的赋值该有什么样的差别?这个答案决定你的构造函数和赋值(assignment)操作符的行为,以及其间的差异。很重要的是别海淆了&quot;初始化&quot;和&quot;赋值&quot;,因为它们对应于不同的函数调用(见条款4)。新type的对象如果被passedbyvalue(以值传递),意味着什么?记住,copy构造函数用来定义一个type的pass-by-value该如何实现。什么是新<br>
+type的&quot;合法值&quot;?对class的成员变量而言,通常只有某些数值集是有效的。那些数值集决定了你的class必须维护的约束条件(invvariants),也就决定了你的成员函数(特别是构造函数、赋值操作符和所谓&quot;setter&quot;函数)必须进行的错误检查工作。它也影响函数抛出的异常、以及(极少被使用的)函数异常明细列(exception specifications)</p>
+</blockquote>
+<blockquote>
+<p>页码：115<br>
+你的新type需要配合某个继承图系(inheritance graph)吗?如果你继承图承自某些既有的classes,你就受到那些classes的设计的束缚,特别是受到&quot;它们的函数是virtual或non-virtual&quot;的影响(见条款34和条款36)。如果你允许其他classc继承你的class,那会影响你所声明的函数–尤其是析构函数–是否为virual(见条款7)。你的新type需要什么样的转换?你的type生存于其他一海票types之间因而彼此该有转换行为吗?如果你希望允许类型T1之物被隐式转换为类型T2之物,就必须在class T1内写一个类型转换函数(operator T2)或在class T2内写一个non-explicit-one-argument(可被单一实参调用)的构造函数。如果你只允许explicit构造函数存在,就得写出专门负责执行转换的函数,且不得为类型转换操作符(typeconversion operators)或non-explicit-one-argument构造函数。(条款15有隐式和显式转换函数的范例。)什么样的操作符和函数对此新type而言是合理的?这个问题的答案决定你将为你的class声明哪些函数。其中某些该是member函数,某些则否(见条款23,24,46)。什么样的标准函数应该驳回?那些正是你必须声明为private者(见条款6)。谁该取用新type的成员?这个提问可以帮助你决定哪个成员为public,哪个为protected,哪个为private。它也帮助你决定哪一个classes和/或functions应该是friends,以及将它们嵌套于另一个之内是否合理。什么是新type的&quot;未声明接口&quot;(undeclared interface)?它对效率异常安全性(见条款29)以及资源运用(例如多任务锁定和动态内存)提供何种保证?你在这些方面提供的保证将为你的class实现代码加上相应的约束条件。你的新type有多么一般化?或许你其实并非定义一个新type,而是定义一整个types家族。果真如此你就不该定义一个新class,而是应该定义一个新的class template.</p>
+</blockquote>
+<blockquote>
+<p>页码：116<br>
+你真的需要一个新type吗?如果只是定义新的derivedclass以便为既有的class添加机能,那么说不定单纯定义一或多个non-member函数或templat,更能够达到目标。这些问题不容易回答,所以定义出高效的classes是一种挑战。然而如果能够设计出至少像C++内置类型一样好的用户自定义(user-defined)classes,一切汗水便都值得。请记住Class的设计就是type的设计。在定义一个新type之前,请确定你已经考虑过本条款覆盖的所有讨论主题。<br>
+合理的设计类.</p>
+</blockquote>
+<h2 id="20-传引用替代传值">20. 传引用替代传值</h2>
+<blockquote></blockquote>
+<p>页码：120<br>
+尽量以pass-by-reference-to-const替换pass-by-value。前者通常比较高效,并可避免切割问题(slicing problem)。以上规则并不适用于内置类型,以及STL的迭代器和函数双象。对它们而言,pass-by-value往往比较适当。主要是考虑性能因素。</p>
+<h2 id="21-必须返回对象时，别返回引用">21.必须返回对象时，别返回引用</h2>
+<blockquote>
+<p>页码：124<br>
+绝不要返回pointer或reference指向一个local stack对象,或返回reference指向一个heap-allocated对象,或返回pointer或reference指向一个local static象而有可能同时需要多个这样的对象。条款4已经为&quot;在单线程环境中合理返回reference指向一个local static对象&quot;提供了一份设计实例。</p>
+</blockquote>
+<p>主要是考虑安全因素，一般使用的是智能指针，引用传递。</p>
+<h2 id="22-成员变量声明为private">22.成员变量声明为private</h2>
+<blockquote>
+<p>页码：128<br>
+切记将成员变量声明为private。这可赋予客户访问数据的一致性、可微划分访问控制、允诺约束条件获得保证,并提供class作者以充分的实现弹性生。protected并不比public更具封装性。</p>
+</blockquote>
+<h2 id="23-以non-member-non-friend-替换member函数">23.以non-member,non-friend 替换member函数</h2>
+<h2 id="24-所有参数皆需类型转换，采用non-member-函数">24.所有参数皆需类型转换，采用non-member 函数</h2>
+<blockquote>
+<p>页码：135<br>
+如果你需要为某个函数的所有参数(包括被this指针所指的那个隐喻参数)进行类型转换,那么这个函数必须是个non-member</p>
+</blockquote>
+<h2 id="25．-考虑写出一个不抛异常的swap函数">25． 考虑写出一个不抛异常的ｓｗａｐ函数</h2>
+<blockquote>
+<p>页码：142<br>
+当std::swap对你的类型效率不高时,提供一个swap成员函数,确定这个函数不抛出异常。如果你提供一个member swap,也该提供一个non-member swap用来调用前者。对于classes(而非templates),也请特化std::swap。调用swap时应针对std::swap使用using声明式,然后调用swap并且不带任何&quot;命名空间资格修饰&quot;。为&quot;用户定义类型&quot;进行stdtemplates全特化是好的,但千万不要试在std内加入某些对std而言全新的东西。</p>
+</blockquote>
+<h2 id="27：尽量少做转型动作">27：尽量少做转型动作</h2>
+<blockquote>
+<p>页码：146<br>
+尽可能延后变量定义式的出现。这样做可增加程序的清晰度并改善程序效率。</p>
+</blockquote>
+<blockquote>
+<p>页码：147<br>
+const_cast通常被用来将对象的常量性转除(cast away the constness)。它也是唯一有此能力的C+±style转型操作符。dynamic_cast主要用来执行&quot;安全向下转型&quot;(safe downcasting),t就是用来决定某对象是否归属继承体系中的某个类型。它是唯一无法由旧式语法执行的动作,也是唯一可能耗费重大运行成本的转型动作(稍后细谈)。。reinterpret_cast意图执行低级转型,实际动作(及结果)可能取决于编译器,这也就表示它不可移植。例如将一个pointer to int转型为一个int这一类转型在低级代码以外很少见。本书只使用一次,那是在讨论如何针对原始内存(rawmemory)写出一个调试用的分配器(debugging allocator)时,见条款50static_cast用来强迫隐式转换(implicitconversions),例如将non-const对象转为const对象(就像条款3所为),或将int转为double等等它也可以用来执行上述多种转换的反向转换,例如将void*指针转为typed指针,将pointer-to-base转为pointer-to-derived.但它无法将const转为non-const–这个只有const_cast才办得到。</p>
+</blockquote>
+<p>一般很少会用到reinterpret_cast，除非你明确知道你再做什么。</p>
+<h2 id="28：避免返回handles指向对象内部成分">28：避免返回handles指向对象内部成分</h2>
+<blockquote>
+<p>页码：153<br>
+如果可以,尽量避免转型,特别是在注重效率的代码中避免dynanic_casts.如果有个设计需要转型动作,试着发展无需转型的替代设计。如果转型是必要的,试着将它隐藏于某个函数背后。客户随后可以调用该函数,而不需将转型放进他们自己的代码内。宁可使用C+±style(新式)转型,不要使用旧式转型。前者很容易辨识出来,而且也比较有着分门别类的职掌。</p>
+</blockquote>
+<blockquote>
+<p>页码：156<br>
+请记住避免返回handles(包括references、指针、迭代器)指向对象内部遵守这个条款可增加封装性,帮助const成员函数的行为像个const,并将发生&quot;虚吊号码牌&quot;(dangling handles)的可能性降至最低。</p>
+</blockquote>
+<h2 id="30：透彻了解inlining的里里外外">30：透彻了解inlining的里里外外</h2>
+<blockquote>
+<p>页码：164<br>
+异常安全函数(Exception-safe functions)即使发生异常也不会泄漏资源或允许任何数据结构败坏。这样的函数区分为三种可能的保证:基本型、强烈型、不抛异常型。&quot;强烈保证&quot;往往能够以copy-and-swap实现出来,但&quot;强烈保证&quot;并非对所有函数都可实现或具备现实意义。函数提供的&quot;异常安全保证&quot;通常最高只等于其所调用之各个函数的&quot;异常安全保证&quot;中的最弱者。</p>
+</blockquote>
+<h2 id="31：文件间的编译依存关系降至最低">31：文件间的编译依存关系降至最低</h2>
+<blockquote>
+<p>页码：178<br>
+支持&quot;编译依存性最小化&quot;的一般构想是:相依于声明式,不要相依于定义式。基于此构想的两个手段是Handle classes和Interface classes。程序库头文件应该以&quot;完全且仅有声明式&quot;(full and declaration-only forms)的形式存在。这种做法不论是否涉及templates都适用。</p>
+</blockquote>
+<h2 id="32：public继承">32：public继承</h2>
+<blockquote>
+<p>页码：185<br>
+&quot;public继承&quot;意味is-a。适用于base classes身上的每一件事情一定也适用于derived classes身上,因为每一个derived class对象也都是一个base class对象。</p>
+</blockquote>
+<p>Public继承：基类的public和protected成员在派生类中保持原来的访问级别。基类的private成员在派生类中不可访问。<br>
+Protected继承：基类的public和protected成员在派生类中都变为protected。基类的private成员在派生类中不可访问。<br>
+Private继承：基类的public和protected成员在派生类中都变为private。基类的private成员在派生类中不可访问。</p>
+<h2 id="33：避免遮掩继承而来的名称">33：避免遮掩继承而来的名称</h2>
+<blockquote>
+<p>页码：186<br>
+global变量x,因为内层作用域的名称会遮掩(遮蔽)外围作用域的名称。我们可以这样看本例的作用域形势:</p>
+</blockquote>
+<h2 id="37：不重定义继承而来的缺省参数值">37：不重定义继承而来的缺省参数值</h2>
+<blockquote>
+<p>页码：210<br>
+绝对不要重新定义继承而来的non-virtual函数。</p>
+</blockquote>
+<blockquote>
+<p>页码：210<br>
+virtual函数系动态绑定(dynamically bound),而缺省参数值却是静态绑定(statically bound)。</p>
+</blockquote>
+<h2 id="38：符合塑模出has-a">38：符合塑模出has-a</h2>
+<blockquote>
+<p>页码：213<br>
+绝对不要重新定义一个继承而来的缺省参数值,因为缺省参数值都是静态绑定,而virtual函数–你唯一应该覆写的东西–却是动态绑定。</p>
+</blockquote>
+<h2 id="39：明智而审慎的使用private继承">39：明智而审慎的使用private继承</h2>
+<blockquote>
+<p>页码：217<br>
+:如果classes之间的继承关系是private,编译器不会自动将一个derived cass对象(例如Student)转换为一个base class对象(例如Person)。这和public继的情况不同。这也就是为什么通过s调用eat会失败的原因。第二条规则是,由private baseclass继承而来的所有成员,在derived class中都会变成private属性,使它们在base class中原本是protected或public属性。</p>
+</blockquote>
+<blockquote>
+<p>页码：217<br>
+继承意味implementedin-terms-of(根据某物实现出)。如果你让class D以private形式继承class B,你的用意是为了采用classB内已经备妥的某些特性,不是因为B对象和D对象存在有任何观念上的关系。private继承纯粹只是一种实现技术(这就是为什么继承自-一个private baseclass的每样东西在你的class内都是private:因为它们都只是实现枝节而已)。借用条款34提出的术语,private继承意味只有实现部分被继承,接部分应略去。如果D以private形式继承B,意思是D对象根据B对象实现而得,再没有其他意涵了。Private继承在软件&quot;设计&quot;层面上没有意义,其意义只及于软件实现层面</p>
+</blockquote>
+<h2 id="39：明智而审慎的使用private继承-2">39：明智而审慎的使用private继承</h2>
+<blockquote>
+<p>页码：220<br>
+这个激进情况真是有够激进,只适用于你所处理的class不带任何数据时。这样的classes没有non-static成员变量,没有virtual函数(因为这种函数的存在会为每个对象带来一个vptr,见条款7),也没有virtual base classes(E因为这样的baseclasses也会招致体积上的额外开销,见条款40)。于是</p>
+</blockquote>
+<blockquote>
+<p>页码：221<br>
+通常C++官方勒令默默安插一个char到空对象内。然而齐位需求(alignment,见条款50)可能造成编译器为类似HoldsAnI这样的class加上一些衬垫(padding),所以有可能HoldsAnInt对象不只获得一个char大小,也许实际上被放大到足够又存放一个int</p>
+</blockquote>
+<h2 id="40：多重继承">40：多重继承</h2>
+<blockquote>
+<p>页码：222<br>
+Private继承意味is-implemented-in-terms of(根据某物实现出)。它通常比复合(composition)的级别低。但是当derived class需要访问protected base class的成员,或需要重新定义继承而来的virtual函数时,这么设计是合理的。和复合(composition)不同,private继承可以造成empty base最优化。这对致力于&quot;对象尺寸最小化&quot;的程序库开发者而言,可能很重要。</p>
+</blockquote>
+<blockquote>
+<p>页码：224<br>
+我对virtual base classes(亦相当于对virtual继承)的忠告很简单。第一,非必要不使用virtual bases。平常请使用non-virtual继承。第二,如果你必须使用virtualbase classes,尽可能避免在其中放置数据。这么一来你就不需担心这些classes身上的初始化(和赋值)所带来的诡异事情了。Java</p>
+</blockquote>
+<h2 id="42：typename双重意义">42：typename双重意义</h2>
+<blockquote>
+<p>页码：233<br>
+classes和templates都支持接口(interfaces)和多态(polymorphism)。对classes而言接口是显式的(explicit),以函数签名为中心。多态则是通过virtual函数发生于运行期。对template参数而言,接口是隐式的(implicit),奠基于有效表达式。多态则是通过template具现化和函数重载解析(function overloading resolution)发生于编译期。</p>
+</blockquote>
+<blockquote>
+<p>页码：234<br>
+template&lt;typenamevoid print2nd(const C&amp; container)C::const_iterator* x;看起来好像我们声明x为一个local变量,它是个指针,指向一个C::const_iterator。但它之所以被那么认为,只因为我们&quot;已经知道&quot;C::const_iterator是个类型。如果C::const iterator不是个类型呢?如果有个static成员变量而碰巧被命名为const_iterator,或如果x碰巧是个global</p>
+</blockquote>
+<blockquote>
+<p>页码：235<br>
+变量名称呢?那样的话上述代码就不再是声明一个local变量,而是一个相乘动作:C::const_iterator乘以x。当然啦,这听起来有点疯狂,但却是可能的,而撰写C++解析器的人必须操心所有可能的输入,甚至是这么疯狂的输入。</p>
+</blockquote>
+<h2 id="43：处理模板化基类内的名称">43：处理模板化基类内的名称</h2>
+<blockquote>
+<p>页码：237<br>
+声明template参数时,前缀关键字class和typename可互换。请使用关键字typename标识嵌套从属类型名称;但不得在base classlists(基类)列或member initialization list(成员初值列)内以它作为base clas修饰符</p>
+</blockquote>
+<h2 id="44：与参数无关的代码抽离templates">44：与参数无关的代码抽离templates</h2>
+<blockquote>
+<p>页码：242<br>
+在derived class templates内通过&quot;this-&gt;&quot;指涉base class templates内的成员名称,或藉由一个明白写出的&quot;base class资格修饰符&quot;完成。</p>
+</blockquote>
+<blockquote>
+<p>页码：247<br>
+Templates生成多个classes和多个函数,所以任何template代码都不该与某个造成膨胀的template参数产生相依关系。因非类型模板参数(non-type template parameters)而造成的代码膨胀。往往可消除,做法是以函数参数或class成员变量替换template参数。因类型参数(type parameters)而造成的代码膨胀,往往可降低,做法是让带有完全相同二进制表述(binary representations)的具现类型(instantition types)共享实现码。</p>
+</blockquote>
+<h2 id="46：需要类型转换时请为模板定义非成员函数">46：需要类型转换时请为模板定义非成员函数</h2>
+<blockquote>
+<p>页码：252<br>
+请使用member function templates(成员函数模板)生成&quot;可接受所有兼容类型&quot;的函数。如果你声明member templates用于&quot;泛化copy构造&quot;或&quot;泛化assignment操作&quot;你还是需要声明正常的copy构造函数和copy assignment操作符。</p>
+</blockquote>
+<h2 id="48：认识template元编程">48：认识template元编程</h2>
+<blockquote>
+<p>页码：268<br>
+Template meta programming(TMP,模板元编程)可将工作由运行期移往编译期,因而得以实现早期错误侦测和更高的执行效率。TMP可被用来生成&quot;基于政策选择组合&quot;(based on combinationsof policychoices)的客户定制代码,也可用来避免生成对某些特殊类型并不适合的代码。</p>
+</blockquote>
+<h2 id="54：熟悉TR1在内的标准程序库">54：熟悉TR1在内的标准程序库</h2>
+<blockquote>
+<p>页码：293<br>
+<strong>严肃对待编译器发出的警告信息</strong>。努力在你的编译器的最高(最严苛)警告级别下争取&quot;无任何警告&quot;的荣誉。不要过度倚赖编译器的报警能力,因为不同的编译器对待事情的态度并不相同。一旦移植到另一个编译器上,你原本倚赖的警告信息有可能消失。</p>
+</blockquote>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/2024/10/20/linux-system-knowlege/">linux_system_knowlege</a><a class="next" href="/liuzexin.github.io/2024/10/20/golang-good-code/">如何真正写好Golang代码？</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/11/11/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/11/11/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/11/11/cpp-summary4/">C++11 新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/11/11/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/11/11/cpp-summary3/">模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/11/11/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/10/20/es-mark/">es-mark</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/10/20/mysql-all/">mysql-all</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/10/20/redis-all/">Redis 小记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/2024/10/20/sort-all/">排序算法汇总-PHP实现</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
