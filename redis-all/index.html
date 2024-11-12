@@ -31,7 +31,7 @@ html.dataset.dark = localStorage.dark;
 <p>redis利用队列技术将并发访问变为串行访问，消除了传统数据库串行控制的开销</p>
 <h5 id="4-Reids常用5种数据类型">4.Reids常用5种数据类型</h5>
 <p>string，list，set，sorted set，hash<br>
-<img src="../img/redis-all/1729416702403.jpg" alt="alt text"></p>
+<img src="../img/redis-all/1729416702403.jpg" alt=" "></p>
 <blockquote>
 <p>redis内部使用一个redisObject对象来表示所有的key和value，redisObject最主要的信息如上图所示：type表示一个value对象具体是何种数据类型，encoding是不同数据类型在redis内部的存储方式。比如：type=string表示value存储的是一个普通字符串，那么encoding可以是raw或者int。</p>
 </blockquote>
@@ -58,7 +58,7 @@ html.dataset.dark = localStorage.dark;
 <p>实现方式：Redis sorted set的内部使用HashMap和跳跃表(skipList)来保证数据的存储和有序，HashMap里放的是成员到score的映射，而跳跃表里存放的是所有的成员，排序依据是HashMap里存的score，使用跳跃表的结构可以获得比较高的查找效率，并且在实现上比较简单。</p>
 </li>
 </ul>
-<p><img src="../img/redis-all/1729416756963.jpg" alt="alt text"></p>
+<p><img src="../img/redis-all/1729416756963.jpg" alt=" "></p>
 <h5 id="6-Reids6种淘汰策略">6.Reids6种淘汰策略</h5>
 <ul>
 <li><strong>noeviction</strong>: 不删除策略, 达到最大内存限制时, 如果需要更多内存, 直接返回错误信息。大多数写命令都会导致占用更多的内存(有极少数会例外。</li>
@@ -67,7 +67,7 @@ html.dataset.dark = localStorage.dark;
 <li><strong>allkeys-random</strong>：所有key通用; 随机删除一部分 key。</li>
 <li><strong>volatile-random</strong>: 只限于设置了 expire 的部分; 随机删除一部分 key。</li>
 <li><strong>volatile-ttl</strong>: 只限于设置了 expire 的部分; 优先删除剩余时间(time to live,TTL) 短的key。<br>
-<img src="../img/redis-all/1729416796666.jpg" alt="alt text"></li>
+<img src="../img/redis-all/1729416796666.jpg" alt=" "></li>
 </ul>
 <h5 id="7-Redis的并发竞争问题如何解决">7.Redis的并发竞争问题如何解决</h5>
 <p>单进程单线程模式，采用队列模式将并发访问变为串行访问。Redis本身没有锁的概念，Redis对于多个客户端连接并不存在竞争，利用setnx实现锁。</p>
@@ -252,26 +252,26 @@ html.dataset.dark = localStorage.dark;
 </ol>
 <p><strong>主从复制比较主流的解决方案</strong><br>
 哨兵机制</p>
-<p><img src="../img/redis-all/1729416857327.jpg" alt="alt text"></p>
+<p><img src="../img/redis-all/1729416857327.jpg" alt=" "></p>
 <p><strong>哨兵的工作原理</strong></p>
 <ol>
 <li>
-<p>每个Sentinel节点都需要定期执行以下任务：每个Sentinel以每秒一次的频率，向它所知的主服务器、从服务器以及其他的Sentinel实例发送一个PING命令。<img src="../img/redis-all/1729416893339.jpg" alt="alt text"></p>
+<p>每个Sentinel节点都需要定期执行以下任务：每个Sentinel以每秒一次的频率，向它所知的主服务器、从服务器以及其他的Sentinel实例发送一个PING命令。<img src="../img/redis-all/1729416893339.jpg" alt=" "></p>
 </li>
 <li>
-<p>如果一个实例距离最后一次有效回复PING命令的时间超过down-after-milliseconds所指定的值，那么这个实例会被Sentinel标记为主观下线。<img src="../img/redis-all/1729416974061.jpg" alt="alt text"></p>
+<p>如果一个实例距离最后一次有效回复PING命令的时间超过down-after-milliseconds所指定的值，那么这个实例会被Sentinel标记为主观下线。<img src="../img/redis-all/1729416974061.jpg" alt=" "></p>
 </li>
 <li>
-<p>如果一个主服务器被标记为主观下线，那么正在监视这个服务器的所有Sentinel节点，要以每秒一次的频率确认主服务器的确进入了主观下线状态。<img src="../img/redis-all/1729416987784.jpg" alt="alt text"></p>
+<p>如果一个主服务器被标记为主观下线，那么正在监视这个服务器的所有Sentinel节点，要以每秒一次的频率确认主服务器的确进入了主观下线状态。<img src="../img/redis-all/1729416987784.jpg" alt=" "></p>
 </li>
 <li>
-<p>如果一个主服务器被标记为主观下线，并且有足够数量的Sentinel（至少要达到配置文件指定的数量）在指定的时间范围内同意这一判断，那么这个主服务器被标记为客观下线。<img src="../img/redis-all/1729417010766.jpg" alt="alt text"></p>
+<p>如果一个主服务器被标记为主观下线，并且有足够数量的Sentinel（至少要达到配置文件指定的数量）在指定的时间范围内同意这一判断，那么这个主服务器被标记为客观下线。<img src="../img/redis-all/1729417010766.jpg" alt=" "></p>
 </li>
 <li>
-<p>一般情况下，每个Sentinel会以每10秒一次的频率向它已知的所有主服务器和从服务器发送INFO命令，当一个主服务器被标记为客观下线时，Sentinel向下线主服务器的所有从服务器发送INFO命令的频率，会从10秒一次改为每秒一次。<img src="../img/redis-all/1729417025748.jpg" alt="alt text"></p>
+<p>一般情况下，每个Sentinel会以每10秒一次的频率向它已知的所有主服务器和从服务器发送INFO命令，当一个主服务器被标记为客观下线时，Sentinel向下线主服务器的所有从服务器发送INFO命令的频率，会从10秒一次改为每秒一次。<img src="../img/redis-all/1729417025748.jpg" alt=" "></p>
 </li>
 <li>
-<p>Sentinel和其他Sentinel协商客观下线的主节点的状态，如果处于SDOWN状态，则投票自动选出新的主节点，将剩余从节点指向新的主节点进行数据复制。<img src="../img/redis-all/1729417049013.jpg" alt="alt text"></p>
+<p>Sentinel和其他Sentinel协商客观下线的主节点的状态，如果处于SDOWN状态，则投票自动选出新的主节点，将剩余从节点指向新的主节点进行数据复制。<img src="../img/redis-all/1729417049013.jpg" alt=" "></p>
 </li>
 <li>
 <p>当没有足够数量的Sentinel同意主服务器下线时，主服务器的客观下线状态就会被移除。当主服务器重新向Sentinel的PING命令返回有效回复时，主服务器的主观下线状态就会被移除。</p>
@@ -283,11 +283,11 @@ html.dataset.dark = localStorage.dark;
 <h5 id="redis中的hash扩容、渐进式rehash过程">redis中的hash扩容、渐进式rehash过程</h5>
 <p>redis字典（hash表）当数据越来越多的时候，就会发生扩容，也就是rehash<br>
 对比：java中的hashmap，当数据数量达到阈值的时候(0.75)，就会发生rehash，hash表长度变为原来的二倍，将原hash表数据全部重新计算hash地址，重新分配位置，达到rehash目的redis中的hash表采用的是渐进式hash的方式：1、redis字典（hash表）底层有两个数组，还有一个rehashidx用来控制rehash<br>
-<img src="../img/redis-all/1729417110185.jpg" alt="alt text"></p>
+<img src="../img/redis-all/1729417110185.jpg" alt=" "></p>
 <p>2、初始默认hash长度为4，当元素个数与hash表长度一致时，就发生扩容，hash长度变为原来的二倍<br>
-<img src="../img/redis-all/1729417125377.jpg" alt="alt text"></p>
+<img src="../img/redis-all/1729417125377.jpg" alt=" "></p>
 <p>3、redis中的hash则是执行的单步rehash的过程：<br>
-<img src="../img/redis-all/1729417149672.jpg" alt="alt text"></p>
+<img src="../img/redis-all/1729417149672.jpg" alt=" "></p>
 <p>每次的增删改查，rehashidx+1，然后执行对应原hash表rehashidx索引位置的rehash</p>
 <p><strong>总结</strong></p>
 <blockquote>
@@ -311,4 +311,4 @@ html.dataset.dark = localStorage.dark;
 <blockquote>
 <p>图片来源网络,侵权删除.</p>
 </blockquote>
-</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a><a class="next" href="/liuzexin.github.io/sort-all/">排序算法汇总-PHP实现</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/es-mark/">ES 总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/redis-all/">Redis 小记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/sort-all/">排序算法汇总-PHP实现</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a><a class="next" href="/liuzexin.github.io/sort-all/">排序算法汇总-PHP实现</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/es-mark/">ES 总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/redis-all/">Redis 小记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/sort-all/">排序算法汇总-PHP实现</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>

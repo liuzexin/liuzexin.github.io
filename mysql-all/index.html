@@ -16,11 +16,11 @@ html.dataset.dark = localStorage.dark;
 <h5 id="2、mysql的索引有哪些吧，聚簇和非聚簇索引又是什么">2、mysql的索引有哪些吧，聚簇和非聚簇索引又是什么</h5>
 <p>索引按照数据结构来说主要包含B+树和Hash索引。<br>
 B+树是左小右大的顺序存储结构，节点只包含id索引列，而叶子节点包含索引列和数据，这种数据和索引在一起存储的索引方式叫做聚簇索引，一张表只能有一个聚簇索引。假设没有定义主键，InnoDB会选择一个唯一的非空索引代替，如果没有的话则会隐式定义一个主键作为聚簇索引。</p>
-<p><img src="../img/mysql-all/1729419378320.jpg" alt="alt text"><br>
+<p><img src="../img/mysql-all/1729419378320.jpg" alt=" "><br>
 非聚簇索引(二级索引)保存的是主键id值，这一点和myisam保存的是数据地址是不同的。</p>
-<p><img src="../img/mysql-all/image.png" alt="alt text"><br>
+<p><img src="../img/mysql-all/image.png" alt=" "><br>
 InnoDB和Myisam聚簇和非聚簇索引的区别<br>
-<img src="../img/mysql-all/image-1.png" alt="alt text"></p>
+<img src="../img/mysql-all/image-1.png" alt=" "></p>
 <h5 id="3、覆盖索引和回表">3、覆盖索引和回表</h5>
 <p>覆盖索引指的是在一次查询中，如果一个索引包含或者说覆盖所有需要查询的字段的值，我们就称之为覆盖索引，而不再需要回表查询。</p>
 <p>而要确定一个查询是否是覆盖索引，我们只需要explain sql语句看Extra的结果是否是“Using index”即可。</p>
@@ -96,11 +96,11 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 <p>而隔离性有4个隔离级别，分别是：</p>
 <p><strong>read uncommit 读未提交</strong>，可能会读到其他事务未提交的数据，也叫做脏读。</p>
 <p>用户本来应该读取到id=1的用户age应该是10，结果读取到了其他事务还没有提交的事务，结果读取结果age=20，这就是脏读。<br>
-<img src="../img/mysql-all/image-2.png" alt="alt text"><br>
+<img src="../img/mysql-all/image-2.png" alt=" "><br>
 <strong>read commit 读已提交</strong>，两次读取结果不一致，叫做不可重复读。</p>
 <p>不可重复读解决了脏读的问题，他只会读取已经提交的事务。</p>
 <p>用户开启事务读取id=1用户，查询到age=10，再次读取发现结果=20，在同一个事务里同一个查询读取到不同的结果叫做不可重复读。<br>
-<img src="../img/mysql-all/image-3.png" alt="alt text"><br>
+<img src="../img/mysql-all/image-3.png" alt=" "><br>
 <strong>repeatable read 可重复复读</strong>，这是mysql的默认级别，就是每次读取结果都一样，但是有可能产生幻读。</p>
 <p><strong>serializable 串行</strong>，一般是不会使用的，他会给每一行读取的数据加锁，会导致大量超时和锁竞争的问题。</p>
 <p><strong>性能越来越差的原因</strong></p>
@@ -125,15 +125,15 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 <strong>白话的理解</strong>：幻读，并不是说两次读取获取的结果集不同，幻读侧重的方面是某一次的 select 操作得到的结果所表征的数据状态无法支撑后续的业务操作。更为具体一些：select 某记录是否存在，不存在，准备插入此记录，但执行 insert 时发现此记录已存在，无法插入，此时就发生了幻读。</p>
 <p>我们每行数实际上隐藏了两列，创建时间版本号，过期(删除)时间版本号，每开始一个新的事务，版本号都会自动递增。<br>
 还是拿上面的user表举例子，假设我们插入两条数据，他们实际上应该长这样。<br>
-<img src="../img/mysql-all/image-4.png" alt="alt text"><br>
+<img src="../img/mysql-all/image-4.png" alt=" "><br>
 这时候假设小明去执行查询，此时current_version=3</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from user where id&lt;=3;</span><br></pre></td></tr></table></figure>
 <p>同时，小红在这时候开启事务去修改id=1的记录，current_version=4</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">update user set name=&#x27;张三三&#x27; where id=1;</span><br></pre></td></tr></table></figure>
 <p>执行成功后的结果是这样的<br>
-<img src="../img/mysql-all/image-5.png" alt="alt text"></p>
+<img src="../img/mysql-all/image-5.png" alt=" "></p>
 <p>如果这时候还有小黑在删除id=2的数据，current_version=5，执行后结果是这样的。<br>
-<img src="../img/mysql-all/image-6.png" alt="alt text"></p>
+<img src="../img/mysql-all/image-6.png" alt=" "></p>
 <p>由于MVCC的原理是查找创建版本小于或等于当前事务版本，删除版本为空或者大于当前事务版本，小明的真实的查询应该是这样</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select * from user where id&lt;=3 and create_version&lt;=3 and (delete_version&gt;3 or delete_version is null);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>所以小明最后查询到的id=1的名字还是’张三’，并且id=2的记录也能查询到。这样做是为了保证事务读取的数据是在事务开始前就已经存在的，要么是事务自己插入或者修改的。</p>
@@ -141,7 +141,7 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 假定用户名是唯一索引。<br>
 小明开启事务current_version=6查询名字为’王五’的记录，发现不存在。<br>
 小红开启事务current_version=7插入一条数据，结果是这样：<br>
-<img src="../img/mysql-all/image-7.png" alt="alt text"></p>
+<img src="../img/mysql-all/image-7.png" alt=" "></p>
 <p>小明执行插入名字’王五’的记录，发现唯一索引冲突，无法插入，这就是幻读。</p>
 <p>其实 RR 也是可以避免幻读的，通过对 select 操作手动加 行X锁（SELECT … FOR UPDATE 这也正是 SERIALIZABLE 隔离级别下会隐式为你做的事情），同时还需要知道，即便当前记录不存在，比如 id = 1 是不存在的，当前事务也会获得一把记录锁（因为InnoDB的行锁锁定的是索引，故记录实体存在与否没关系，存在就加 行X锁，不存在就加 next-key lock间隙X锁），其他事务则无法插入此索引的记录，故杜绝了幻读。</p>
 <p>mvcc就是为了查询一些正在被另一个事务更新的行，并且可以看到它们被更新之前的值。这是一个可以用来增强并发性的强大的技术，因为这样的一来的话查询就不用等待另一个事务释放锁</p>
@@ -207,7 +207,7 @@ master创建dump线程，推送binglog到slave<br>
 slave启动一个IO线程读取同步过来的master的binlog，记录到relay log中继日志中<br>
 slave再开启一个sql线程读取relay log事件并在slave执行，完成同步<br>
 slave记录自己的binglog</p>
-<p><img src="../img/mysql-all/image-8.png" alt="alt text"><br>
+<p><img src="../img/mysql-all/image-8.png" alt=" "><br>
 由于mysql默认的复制方式是异步的，主库把日志发送给从库后不关心从库是否已经处理，这样会产生一个问题就是假设主库挂了，从库处理失败了，这时候从库升为主库后，日志就丢失了。由此产生两个概念。<br>
 全同步复制<br>
 主库写入binlog后强制同步日志到从库，所有的从库都执行完成后才返回给客户端，但是很显然这个方式的话性能会受到严重影响。<br>
@@ -322,7 +322,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <p>在InnoDB 中每一个事务都有一个自己的事务id，并且是唯一的，递增的 。<br>
 对于Mysql中的每一个数据行都有可能存在多个版本，在每次事务更新数据的时候，都会生成一个新的数据版本，并且把自己的数据id赋值给当前版本的row trx_id。</p>
 </blockquote>
-<p><img src="../img/mysql-all/image-9.png" alt="alt text"><br>
+<p><img src="../img/mysql-all/image-9.png" alt=" "><br>
 如图中所示，假如三个事务更新了同一行数据，那么就会有对应的三个数据版本。<br>
 实际上版本1、版本2并非实际物理存在的，而图中的U1和U2实际就是undo log，这v1和v2版本是根据当前v3和undo log计算出来的。</p>
 <p><strong>对于一个快照来说，你知道它要遵循什么规则</strong></p>
@@ -377,7 +377,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>在B树中，你可以将键和值存放在内部节点和叶子节点；但在B+树中，内部节点都是键，没有值，叶子节点同时存放键和值。</li>
 <li>B+树的叶子节点有一条链相连，而B树的叶子节点各自独立。</li>
 </ul>
-<p><img src="../img/mysql-all/image-10.png" alt="alt text"></p>
+<p><img src="../img/mysql-all/image-10.png" alt=" "></p>
 <h5 id="31、数据库为什么使用B-树而不是B树">31、数据库为什么使用B+树而不是B树</h5>
 <ul>
 <li>B树只适合随机检索，而B+树同时支持随机检索和顺序检索；</li>
@@ -413,7 +413,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>而not extsts的子查询依然能用到表上的索引。所以无论那个表大，用not exists都比not in要快。</li>
 </ul>
 <h5 id="36、drop、delete与truncate的区别">36、drop、delete与truncate的区别</h5>
-<p><img src="../img/mysql-all/image-11.png" alt="alt text"></p>
+<p><img src="../img/mysql-all/image-11.png" alt=" "></p>
 <h5 id="37、SQL的生命周期">37、SQL的生命周期</h5>
 <ol>
 <li>应用服务器与数据库服务器建立一个连接</li>
@@ -460,7 +460,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 从：io线程——在使用start slave 之后，负责从master上拉取 binlog 内容，放进自己的relay log中；<br>
 从：sql执行线程——执行relay log中的语句；</p>
 </blockquote>
-<p><img src="../img/mysql-all/image-12.png" alt="alt text"></p>
+<p><img src="../img/mysql-all/image-12.png" alt=" "></p>
 <blockquote>
 <p>第一步：master在每个事务更新数据完成之前，将该操作记录串行地写入到binlog文件中。<br>
 第二步：salve开启一个I/O Thread，该线程在master打开一个普通连接，主要工作是binlog dump process。如果读取的进度已经跟上了master，就进入睡眠状态并等待master产生新的事件。I/O线程最终的目的是将这些事件写入到中继日志中。<br>
@@ -485,4 +485,4 @@ InnoDB为了做数据的持久化，会将数据存储到磁盘上。但是面�
 <blockquote>
 <p>图片来源网络,侵权删除.</p>
 </blockquote>
-</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/es-mark/">ES 总结</a><a class="next" href="/liuzexin.github.io/redis-all/">Redis 小记</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/es-mark/">ES 总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/redis-all/">Redis 小记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/sort-all/">排序算法汇总-PHP实现</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/es-mark/">ES 总结</a><a class="next" href="/liuzexin.github.io/redis-all/">Redis 小记</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/es-mark/">ES 总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/redis-all/">Redis 小记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/sort-all/">排序算法汇总-PHP实现</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
