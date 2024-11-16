@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>MYSQL 知识随笔 | Eddison</title><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/liuzexin.github.io/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/liuzexin.github.io/favicon.ico"><link rel="apple-touch-icon" href="/liuzexin.github.io/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/liuzexin.github.io/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><div class="darkmode-toggle">🌓</div><script>var prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="历史文章 CSDN https://blog.csdn.net/lzx_victory?type=blog"><title>MYSQL 知识随笔 | Eddison</title><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/liuzexin.github.io/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/liuzexin.github.io/favicon.ico"><link rel="apple-touch-icon" href="/liuzexin.github.io/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/liuzexin.github.io/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><div class="darkmode-toggle">🌓</div><script>var prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 var toggle = document.querySelector('.darkmode-toggle');
 var html = document.querySelector('html');
 
@@ -7,13 +7,13 @@ html.dataset.dark = localStorage.dark || prefersDarkMode.matches;
 toggle.addEventListener('click', () => {
 localStorage.dark = !(html.dataset.dark == 'true');
 html.dataset.dark = localStorage.dark;
-});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">MYSQL 知识随笔</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流'</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">MYSQL 知识随笔</h1><div class="post-meta">2024-10-20</div><div class="post-content"><blockquote></blockquote>
-<h5 id="1、myisam-和-innodb的区别">1、myisam 和 innodb的区别</h5>
+});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">MYSQL 知识随笔</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">MYSQL 知识随笔</h1><div class="post-meta">2022-12-20</div><div class="post-content"><!--toc-->
+<h1><span id="1-myisam-和-innodb的区别">1、myisam 和 innodb的区别</span></h1>
 <ul>
 <li>myisam引擎是5.1版本之前的默认引擎，支持全文检索、压缩、空间函数等，但是不支持事务和行级锁，所以一般用于有大量查询少量插入的场景来使用，而且myisam不支持外键，并且索引和数据是分开存储的。</li>
 <li>innodb是基于聚簇索引建立的，和myisam相反它支持事务、外键，并且通过MVCC来支持高并发，索引和数据存储在一起。</li>
 </ul>
-<h5 id="2、mysql的索引有哪些吧，聚簇和非聚簇索引又是什么">2、mysql的索引有哪些吧，聚簇和非聚簇索引又是什么</h5>
+<h1><span id="2-mysql的索引有哪些吧聚簇和非聚簇索引又是什么">2、mysql的索引有哪些吧，聚簇和非聚簇索引又是什么</span></h1>
 <p>索引按照数据结构来说主要包含B+树和Hash索引。<br>
 B+树是左小右大的顺序存储结构，节点只包含id索引列，而叶子节点包含索引列和数据，这种数据和索引在一起存储的索引方式叫做聚簇索引，一张表只能有一个聚簇索引。假设没有定义主键，InnoDB会选择一个唯一的非空索引代替，如果没有的话则会隐式定义一个主键作为聚簇索引。</p>
 <p><img src="../img/mysql-all/1729419378320.jpg" alt=" "><br>
@@ -21,10 +21,10 @@ B+树是左小右大的顺序存储结构，节点只包含id索引列，而叶�
 <p><img src="../img/mysql-all/image.png" alt=" "><br>
 InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 <img src="../img/mysql-all/image-1.png" alt=" "></p>
-<h5 id="3、覆盖索引和回表">3、覆盖索引和回表</h5>
+<h1><span id="3-覆盖索引和回表">3、覆盖索引和回表</span></h1>
 <p>覆盖索引指的是在一次查询中，如果一个索引包含或者说覆盖所有需要查询的字段的值，我们就称之为覆盖索引，而不再需要回表查询。</p>
 <p>而要确定一个查询是否是覆盖索引，我们只需要explain sql语句看Extra的结果是否是“Using index”即可。</p>
-<h5 id="4、锁的类型有哪些">4、锁的类型有哪些</h5>
+<h1><span id="4-锁的类型有哪些">4、锁的类型有哪些</span></h1>
 <ul>
 <li>mysql锁分为共享锁和排他锁，也叫做读锁和写锁。</li>
 </ul>
@@ -39,7 +39,7 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 <p>表锁会锁定整张表并且阻塞其他用户对该表的所有读写操作，比如alter修改表结构的时候会锁表。<br>
 行锁又可以分为乐观锁和悲观锁，悲观锁可以通过for update实现，乐观锁则通过版本号实现。</p>
 </blockquote>
-<h5 id="5、Mysql悲观锁乐观锁区别与使用场景">5、Mysql悲观锁乐观锁区别与使用场景</h5>
+<h1><span id="5-mysql悲观锁乐观锁区别与使用场景">5、Mysql悲观锁乐观锁区别与使用场景</span></h1>
 <p><strong>乐观锁</strong>：顾名思义，对加锁持有一种乐观的态度，即先进行业务操作，不到最后一步不进行加锁，&quot;乐观&quot;的认为加锁一定会成功的，在最后一步更新数据的时候再进行加锁。</p>
 <p><strong>悲观锁</strong>：悲观锁对数据加锁持有一种悲观的态度。因此，在整个数据处理过程中，将数据处于锁定状态。悲观锁的实现，往往依靠数据库提供的锁机制（也只有数据库层提供的锁机制才能真正保证数据访问的排他性，否则，即使在本系统中实现了加锁机制，也无法保证外部系统不会修改数据）。</p>
 <p><strong>5.2、实现方式</strong><br>
@@ -88,7 +88,7 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 <blockquote>
 <p>悲观锁的并发性低于乐观锁</p>
 </blockquote>
-<h5 id="6-事务的基本特性和隔离级别">6 事务的基本特性和隔离级别</h5>
+<h1><span id="6-事务的基本特性和隔离级别">6 事务的基本特性和隔离级别</span></h1>
 <p>事务基本特性ACID分别是：<br>
 <strong>原子性</strong>：指的是一个事务中的操作要么全部成功，要么全部失败。<br>
 <strong>一致性</strong>：指的是数据库总是从一个一致性的状态转换到另外一个一致性的状态。比如A转账给B100块钱，假设中间sql执行过程中系统崩溃A也不会损失100块，因为事务没有提交，修改也就不会保存到数据库。 他事务是不可见的。<br>
@@ -110,7 +110,7 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 <li>对于串行化加的是一把大锁，读的时候加共享锁，不能写，写的时候，加的是排它锁，阻塞其它事务的写入和读取，若是其它的事务长时间不能写入就会直接报超时，所以它的性能也是最差的，对于它来就没有什么并发性可言</li>
 <li>对于读提交和可重复读，他们俩的实现是兼顾解决数据问题，然后又要有一定的并发行，所以在实现上锁机制会比串行化优化很多，提高并发性，所以性能也会比较好</li>
 </ul>
-<h5 id="7-ACID靠什么保证">7 ACID靠什么保证</h5>
+<h1><span id="7-acid靠什么保证">7 ACID靠什么保证</span></h1>
 <p><strong>A原子性</strong><br>
 由undo log日志保证，它记录了需要回滚的日志信息，事务回滚时撤销已经执行成功的sql<br>
 <strong>C一致性</strong><br>
@@ -119,7 +119,7 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 由MVCC来保证<br>
 <strong>D持久性</strong><br>
 由内存+redo log来保证，mysql修改数据同时在内存和redo log记录这次操作，事务提交的时候通过redo log刷盘，宕机的时候可以从redo log恢复</p>
-<h5 id="8-什么是幻读，什么是MVCC？">8 什么是幻读，什么是MVCC？</h5>
+<h1><span id="8-什么是幻读什么是mvcc">8 什么是幻读，什么是MVCC？</span></h1>
 <p>要说幻读，首先要了解MVCC，MVCC叫做多版本并发控制，实际上就是保存了数据在某个时间节点的快照。<br>
 <strong>幻读错误的理解</strong>：说幻读是 事务A 执行两次 select 操作得到不同的数据集，即 select 1 得到 10 条记录，select 2 得到 11 条记录。这其实并不是幻读，这是不可重复读的一种，只会在 RU 、RC 级别下出现，而 RR 隔离级别下仅通过MVCC机制就可以避免这种现象。<br>
 <strong>白话的理解</strong>：幻读，并不是说两次读取获取的结果集不同，幻读侧重的方面是某一次的 select 操作得到的结果所表征的数据状态无法支撑后续的业务操作。更为具体一些：select 某记录是否存在，不存在，准备插入此记录，但执行 insert 时发现此记录已存在，无法插入，此时就发生了幻读。</p>
@@ -152,7 +152,7 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 　　SELECT … FOR UPDATE给索引记录加锁，这种情况下跟UPDATE的加锁情况是一样的<br>
 <strong>一致性非锁定读</strong><br>
 　　consistent read （一致性读），InnoDB用多版本来提供查询数据库在某个时间点的快照。如果隔离级别是REPEATABLE READ，那么在同一个事务中的所有一致性读都读的是事务中第一个这样的读读到的快照；如果是READ COMMITTED，那么一个事务中的每一个一致性读都会读到它自己刷新的快照版本。一致性读不会给它所访问的表加任何形式的锁，因此其它事务可以同时并发的修改它们。</p>
-<h5 id="9、什么是间隙锁">9、什么是间隙锁</h5>
+<h1><span id="9-什么是间隙锁">9、什么是间隙锁</span></h1>
 <p>间隙锁是可重复读级别下才会有的锁，结合MVCC和间隙锁可以解决幻读的问题。我们还是以user举例，假设现在user表有几条记录</p>
 <table>
 <thead>
@@ -188,18 +188,18 @@ InnoDB和Myisam聚簇和非聚簇索引的区别<br>
 <li>Gap Locks会锁住两个索引之间的区间，比如select * from User where id&gt;3 and id&lt;5 for update，就会在区间（3，5）之间加上Gap Locks。</li>
 <li>Next-Key Locks是Gap Locks+Record Locks形成闭区间锁select * from User where id&gt;=3 and id=&lt;5 for update，就会在区间[3,5]之间加上Next-Key Locks。</li>
 </ul>
-<h5 id="10、你们数据量级多大？分库分表怎么做的">10、你们数据量级多大？分库分表怎么做的</h5>
+<h1><span id="10-你们数据量级多大分库分表怎么做的">10、你们数据量级多大？分库分表怎么做的</span></h1>
 <p>分库分表分为垂直和水平两个方式</p>
-<h5 id="11、分表后的ID怎么保证唯一性的">11、分表后的ID怎么保证唯一性的</h5>
+<h1><span id="11-分表后的id怎么保证唯一性的">11、分表后的ID怎么保证唯一性的</span></h1>
 <p>因为我们主键默认都是自增的，那么分表之后的主键在不同表就肯定会有冲突了。有几个办法考虑：</p>
 <p><strong>设定步长</strong>，比如1-1024张表我们分别设定1-1024的基础步长，这样主键落到不同的表就不会冲突了。<br>
 <strong>分布式ID</strong>，自己实现一套分布式ID生成算法或者使用开源的比如雪花算法这种<br>
 分表后不使用主键作为查询依据，而是每张表单独新增一个字段作为唯一主键使用，比如订单表订单号是唯一的，不管最终落在哪张表都基于订单号作为查询依据，更新也一样。</p>
-<h5 id="12、分表后非sharding-key的查询怎么处理呢">12、分表后非sharding_key的查询怎么处理呢</h5>
+<h1><span id="12-分表后非sharding_key的查询怎么处理呢">12、分表后非sharding_key的查询怎么处理呢</span></h1>
 <p>可以做一个mapping表，比如这时候商家要查询订单列表怎么办呢？不带user_id查询的话你总不能扫全表吧？所以我们可以做一个映射关系表，保存商家和用户的关系，查询的时候先通过商家查询到用户列表，再通过user_id去查询。<br>
 打宽表，一般而言，商户端对数据实时性要求并不是很高，比如查询订单列表，可以把订单表同步到离线（实时）数仓，再基于数仓去做成一张宽表，再基于其他如es提供查询服务。<br>
 数据量不是很大的话，比如后台的一些查询之类的，也可以通过多线程扫表，然后再聚合结果的方式来做。或者异步的形式也是可以的。</p>
-<h5 id="13、mysql主从同步怎么做的">13、mysql主从同步怎么做的</h5>
+<h1><span id="13-mysql主从同步怎么做的">13、mysql主从同步怎么做的</span></h1>
 <p>首先先了解mysql主从同步的原理</p>
 <p>master提交完事务后，写入binlog<br>
 slave连接到master，获取binlog<br>
@@ -213,7 +213,7 @@ slave记录自己的binglog</p>
 主库写入binlog后强制同步日志到从库，所有的从库都执行完成后才返回给客户端，但是很显然这个方式的话性能会受到严重影响。<br>
 半同步复制<br>
 和全同步不同的是，半同步复制的逻辑是这样，从库写入日志成功后返回ACK确认给主库，主库收到至少一个从库的确认就认为写操作完成。</p>
-<h5 id="14、主从的延迟怎么解决">14、主从的延迟怎么解决</h5>
+<h1><span id="14-主从的延迟怎么解决">14、主从的延迟怎么解决</span></h1>
 <p>MySQL主从复制是通过监控和同步主机的binlog日志，然后实施恢复，主从之间延迟的原因有很多：</p>
 <ol>
 <li>是从服务器监控binlog日志文件，例如每隔1秒更新一次，就</li>
@@ -227,7 +227,7 @@ slave记录自己的binglog</p>
 <li>使用物理复制。</li>
 <li>将主服务器的大事务操作，切割成若干个小事务</li>
 </ul>
-<h5 id="15、哪些情况下会发生针对该列创建了索引但是在查询的时候并没有使用呢">15、哪些情况下会发生针对该列创建了索引但是在查询的时候并没有使用呢</h5>
+<h1><span id="15-哪些情况下会发生针对该列创建了索引但是在查询的时候并没有使用呢">15、哪些情况下会发生针对该列创建了索引但是在查询的时候并没有使用呢</span></h1>
 <ul>
 <li>使用不等于查询,</li>
 <li>列参与了数学运算或者函数</li>
@@ -235,7 +235,7 @@ slave记录自己的binglog</p>
 <li>当mysql分析全表扫描比使用索引快的时候不使用索引.</li>
 <li>当使用联合索引,前面一个条件为范围查询,后面的即使符合最左前缀原则,也无法使用索引.</li>
 </ul>
-<h5 id="16、Hash索引和B-树所有有什么区别或者说优劣">16、Hash索引和B+树所有有什么区别或者说优劣</h5>
+<h1><span id="16-hash索引和b树所有有什么区别或者说优劣">16、Hash索引和B+树所有有什么区别或者说优劣</span></h1>
 <p><strong>实现原理</strong></p>
 <ul>
 <li>hash索引底层就是hash表,进行查找时,调用一次hash函数就可以获取到相应的键值,之后进行回表查询获得实际数据.</li>
@@ -250,38 +250,38 @@ slave记录自己的binglog</p>
 <li>hash索引任何时候都避免不了回表查询数据,而B+树在符合某些条件(聚簇索引,覆盖索引等)的时候可以只通过索引完成查询.</li>
 <li>hash索引虽然在等值查询上较快,但是不稳定.性能不可预测,当某个键值存在大量重复的时候,发生hash碰撞,此时效率可能极差.而B+树的查询效率比较稳定,对于所有的查询都是从根节点到叶子节点,且树的高度较低.</li>
 </ul>
-<h5 id="17、MySQL中的varchar和char有什么区别">17、MySQL中的varchar和char有什么区别</h5>
+<h1><span id="17-mysql中的varchar和char有什么区别">17、MySQL中的varchar和char有什么区别</span></h1>
 <ul>
 <li>char是一个定长字段,假如申请了char(10)的空间,那么无论实际存储多少内容.该字段都占用10个字符,而varchar是变长的,也就是说申请的只是最大长度,占用的空间为实际字符长度+1,最后一个字符存储使用了多长的空间.</li>
 <li>在检索效率上来讲,char &gt; varchar,因此在使用中,如果确定某个字段的值的长度,可以使用char,否则应该尽量使用varchar.例如存储用户MD5加密后的密码,则应该使用char.</li>
 </ul>
-<h5 id="18、varchar-10-和int-10-代表什么含义">18、varchar(10)和int(10)代表什么含义</h5>
+<h1><span id="18-varchar10和int10代表什么含义">18、varchar(10)和int(10)代表什么含义</span></h1>
 <p>varchar的10代表了申请的空间长度,也是可以存储的数据的最大长度,而int的10只是代表了展示的长度,不足10位以0填充.也就是说,int(1)和int(10)所能存储的数字大小以及占用的空间都是相同的,只是在展示时按照长度展示.</p>
-<h5 id="19、MySQL的binlog有有几种录入格式-分别有什么区别">19、MySQL的binlog有有几种录入格式?分别有什么区别?</h5>
+<h1><span id="19-mysql的binlog有有几种录入格式分别有什么区别">19、MySQL的binlog有有几种录入格式?分别有什么区别?</span></h1>
 <p>有三种格式,statement,row和mixed.<br>
 statement模式下,记录单元为语句.即每一个sql造成的影响会记录.由于sql的执行是有上下文的,因此在保存的时候需要保存相关的信息,同时还有一些使用了函数之类的语句无法被记录复制.<br>
 row级别下,记录单元为每一行的改动,基本是可以全部记下来但是由于很多操作,会导致大量行的改动(比如alter table),因此这种模式的文件保存的信息太多,日志量太大.<br>
 mixed. 一种折中的方案,普通操作使用statement记录,当无法使用statement的时候使用row.此外,新版的MySQL中对row级别也做了一些优化,当表结构发生变化的时候,会记录语句而不是逐行记录.</p>
-<h5 id="20、超大分页怎么处理">20、超大分页怎么处理</h5>
+<h1><span id="20-超大分页怎么处理">20、超大分页怎么处理</span></h1>
 <ul>
 <li>数据库层面,这也是我们主要集中关注的(虽然收效没那么大),类似于select * from table where age &gt; 20 limit 1000000,10这种查询其实也是有可以优化的余地的. 这条语句需要load1000000数据然后基本上全部丢弃,只取10条当然比较慢. 当时我们可以修改为select * from table where id in (select id from table where age &gt; 20 limit 1000000,10).这样虽然也load了一百万的数据,但是由于索引覆盖,要查询的所有字段都在索引中,所以速度会很快. 同时如果ID连续的好,我们还可以select * from table where id &gt; 1000000 limit 10,效率也是不错的,优化的可能性有许多种,但是核心思想都一样,就是减少load的数据.</li>
 <li>从需求的角度减少这种请求….主要是不做类似的需求(直接跳转到几百万页之后的具体某一页.只允许逐页查看或者按照给定的路线走,这样可预测,可缓存)以及防止ID泄漏且连续被人恶意攻击.</li>
 <li>解决超大分页,其实主要是靠缓存,可预测性的提前查到内容,缓存至redis等k-V数据库中,直接返回即可.</li>
 </ul>
-<h5 id="21、关心过业务系统里面的sql耗时吗-统计过慢查询吗-对慢查询都怎么优化过">21、关心过业务系统里面的sql耗时吗?统计过慢查询吗?对慢查询都怎么优化过</h5>
+<h1><span id="21-关心过业务系统里面的sql耗时吗统计过慢查询吗对慢查询都怎么优化过">21、关心过业务系统里面的sql耗时吗?统计过慢查询吗?对慢查询都怎么优化过</span></h1>
 <p>优化也是针对这三个方向来的</p>
 <ul>
 <li>首先分析语句,看看是否load了额外的数据,可能是查询了多余的行并且抛弃掉了,可能是加载了许多结果中并不需要的列,对语句进行分析以及重写.</li>
 <li>分析语句的执行计划,然后获得其使用索引的情况,之后修改语句或者修改索引,使得语句可以尽可能的命中索引</li>
 <li>.如果对语句的优化已经无法进行,可以考虑表中的数据量是否太大,如果是的话可以进行横向或者纵向的分表.</li>
 </ul>
-<h5 id="22、什么是存储过程？有哪些优缺点">22、什么是存储过程？有哪些优缺点</h5>
+<h1><span id="22-什么是存储过程有哪些优缺点">22、什么是存储过程？有哪些优缺点</span></h1>
 <p>存储过程是一些预编译的SQL语句。</p>
 <ol>
 <li>存储过程可以说是一个记录集，它是由一些T-SQL语句组成的代码块，这些T-SQL语句代码像一个方法一样实现一些功能（对单表或多表的增删改查），然后再给这个代码块取一个名字，在用到这个功能的时候调用他就行了。</li>
 <li>存储过程是一个预编译的代码块，执行效率比较高,一个存储过程替代大量T_SQL语句 ，可以降低网络通信量，提高通信速率,可以一定程度上确保数据安全</li>
 </ol>
-<h5 id="23、日志的Redo-Undo机制">23、日志的Redo/Undo机制</h5>
+<h1><span id="23-日志的redoundo机制">23、日志的Redo/Undo机制</span></h1>
 <ul>
 <li>Redo log用来记录某数据块被修改后的值，可以用来恢复未写入 data file 的已成功事务更新的数据；</li>
 <li>Undo log是用来记录数据更新前的值，保证数据更新失败能够回滚。</li>
@@ -290,7 +290,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <blockquote>
 <p>假如某个时刻数据库崩溃，在崩溃之前有事务A和事务B在执行，事务A已经提交，而事务B还未提交。当数据库重启进行 crash-recovery 时，就会通过Redo log将已经提交事务的更改写到数据文件，而还没有提交的就通过Undo log进行roll back。</p>
 </blockquote>
-<h5 id="24、mysql中锁的概念">24、mysql中锁的概念</h5>
+<h1><span id="24-mysql中锁的概念">24、mysql中锁的概念</span></h1>
 <ul>
 <li>共享锁是针对同一份数据，多个读操作可以同时进行，简单来说即读加锁，不能写并且可并行读；</li>
 <li>排他锁针对写操作，假如当前写操作没有完成，那么它会阻断其它的写锁和读锁，即写加锁，其它读写都阻塞。</li>
@@ -313,7 +313,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <blockquote>
 <p>在数据库的增、删、改、查中，只有增、删、改才会加上排它锁，而只是查询并不会加锁，只能通过在select语句后显式加lock in share mode或者for update来加共享锁或者排它锁。</p>
 </blockquote>
-<h5 id="25、MVCC（多版本并发控制）原理">25、MVCC（多版本并发控制）原理</h5>
+<h1><span id="25-mvcc多版本并发控制原理">25、MVCC（多版本并发控制）原理</span></h1>
 <p>实现MVCC时用到了一致性视图，用于支持读提交和可重复读的实现<br>
 在实现可重复读的隔离级别，只需要在事务开始的时候创建一致性视图，也叫做快照，之后的查询里都共用这个一致性视图，后续的事务对数据的更改是对当前事务是不可见的，这样就实现了可重复读。<br>
 而读提交，每一个语句执行前都会重新计算出一个新的视图，这个也是可重复读和读提交在MVCC实现层面上的区别<br>
@@ -329,7 +329,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <blockquote>
 <p>对于一个事务视图来说除了对自己更新的总是可见，另外还有三种情况：版本未提交的，都是不可见的；版本已经提交，但是是在创建视图之后提交的也是不可见的；版本已经提交，若是在创建视图之前提交的是可见的。</p>
 </blockquote>
-<h5 id="26、两个事务执行写操作，又怎么保证并发呢">26、两个事务执行写操作，又怎么保证并发呢</h5>
+<h1><span id="26-两个事务执行写操作又怎么保证并发呢">26、两个事务执行写操作，又怎么保证并发呢</span></h1>
 <p><strong>在update的where后的条件是在有索引的情况下</strong></p>
 <blockquote>
 <p>假如事务1和事务2都要执行update操作，事务1先update数据行的时候，先回获取行锁，锁定数据，当事务2要进行update操作的时候，也会取获取该数据行的行锁，但是已经被事务1占有，事务2只能wait。若是事务1长时间没有释放锁，事务2就会出现超时异常 。</p>
@@ -338,7 +338,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <blockquote>
 <p>若是没有索引的条件下，就获取所有行，都加上行锁，然后Mysql会再次过滤符合条件的的行并释放锁，只有符合条件的行才会继续持有锁。这样的性能消耗也会比较大</p>
 </blockquote>
-<h5 id="27、InnoDB引擎的4大特性">27、InnoDB引擎的4大特性</h5>
+<h1><span id="27-innodb引擎的4大特性">27、InnoDB引擎的4大特性</span></h1>
 <p><strong>插入缓冲（insert buffer)</strong></p>
 <blockquote>
 <p>于非聚集索引的插入或更新操作，不是每一次直接插入到索引页中，而是先判断插入的非聚集索引页是否在缓冲池中。若在，则直接插入；若不在，则先放入到一个Insert Buffer对象中</p>
@@ -356,7 +356,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <blockquote>
 <p>InnoDB使用两种预读算法来提高I/O性能：线性预读（linear read-ahead）和随机预读（randomread-ahead）</p>
 </blockquote>
-<h5 id="28、创建索引的原则">28、创建索引的原则</h5>
+<h1><span id="28-创建索引的原则">28、创建索引的原则</span></h1>
 <ul>
 <li>最左前缀匹配原则，组合索引非常重要的原则，mysql会一直向右匹配直到遇到范围查询(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。较频繁作为查询条件的字段才去创建索引</li>
 <li>更新频繁字段不适合创建索引</li>
@@ -366,19 +366,19 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>对于那些查询中很少涉及的列，重复值比较多的列不要建立索引。</li>
 <li>对于定义为text、image和bit的数据类型的列不要建立索引。</li>
 </ul>
-<h5 id="29、百万级别或以上的数据如何删除">29、百万级别或以上的数据如何删除</h5>
+<h1><span id="29-百万级别或以上的数据如何删除">29、百万级别或以上的数据如何删除</span></h1>
 <ol>
 <li>先删除索引（此时大概耗时三分多钟）</li>
 <li>然后删除其中无用数据（此过程需要不到两分钟）</li>
 <li>删除完成后重新创建索引(此时数据较少了)创建索引也非常快，约十分钟左右。</li>
 </ol>
-<h5 id="30、B树和B-树的区别">30、B树和B+树的区别</h5>
+<h1><span id="30-b树和b树的区别">30、B树和B+树的区别</span></h1>
 <ul>
 <li>在B树中，你可以将键和值存放在内部节点和叶子节点；但在B+树中，内部节点都是键，没有值，叶子节点同时存放键和值。</li>
 <li>B+树的叶子节点有一条链相连，而B树的叶子节点各自独立。</li>
 </ul>
 <p><img src="../img/mysql-all/image-10.png" alt=" "></p>
-<h5 id="31、数据库为什么使用B-树而不是B树">31、数据库为什么使用B+树而不是B树</h5>
+<h1><span id="31-数据库为什么使用b树而不是b树">31、数据库为什么使用B+树而不是B树</span></h1>
 <ul>
 <li>B树只适合随机检索，而B+树同时支持随机检索和顺序检索；</li>
 <li>B+树空间利用率更高，可减少I/O次数，磁盘读写代价更低。</li>
@@ -386,7 +386,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>B-树在提高了磁盘IO性能的同时并没有解决元素遍历的效率低下的问题。B+树的叶子节点使用指针顺序连接在一起，只要遍历叶子节点就可以实现整棵树的遍历。而且在数据库中基于范围的查询是非常频繁的，而B树不支持这样的操作。</li>
 <li>增删文件（节点）时，效率更高。因为B+树的叶子节点包含所有关键字，并以有序的链表结构存储，这样可很好提高增删效率。</li>
 </ul>
-<h5 id="32、什么是死锁？怎么解决？">32、什么是死锁？怎么解决？</h5>
+<h1><span id="32-什么是死锁怎么解决">32、什么是死锁？怎么解决？</span></h1>
 <p>死锁是指两个或多个事务在同一资源上相互占用，并请求锁定对方的资源，从而导致恶性循环的现象。<br>
 <strong>常见的解决死锁的方法</strong></p>
 <ol>
@@ -395,16 +395,16 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>对于非常容易产生死锁的业务部分，可以尝试使用升级锁定颗粒度，通过表级锁定来减少死锁产生的概率；</li>
 </ol>
 <p>如果业务处理不好可以用分布式事务锁或者使用乐观锁</p>
-<h5 id="33、为什么要使用视图？什么是视图">33、为什么要使用视图？什么是视图</h5>
+<h1><span id="33-为什么要使用视图什么是视图">33、为什么要使用视图？什么是视图</span></h1>
 <blockquote>
 <p>为了提高复杂SQL语句的复用性和表操作的安全性，MySQL数据库管理系统提供了视图特性。所谓视图，本质上是一种虚拟表，在物理上是不存在的，其内容与真实的表相似，包含一系列带有名称的列和行数据</p>
 </blockquote>
-<h5 id="34、超键、候选键、主键、外键分别是什么">34、超键、候选键、主键、外键分别是什么</h5>
+<h1><span id="34-超键-候选键-主键-外键分别是什么">34、超键、候选键、主键、外键分别是什么</span></h1>
 <p><strong>超键</strong>：在关系中能唯一标识元组的属性集称为关系模式的超键。一个属性可以为作为一个超键，多个属性组合在一起也可以作为一个超键。超键包含候选键和主键。<br>
 <strong>候选键</strong>：是最小超键，即没有冗余元素的超键。<br>
 <strong>主键</strong>：数据库表中对储存数据对象予以唯一和完整标识的数据列或属性的组合。一个数据列只能有一个主键，且主键的取值不能缺失，即不能为空值（Null）。<br>
 <strong>外键</strong>：在一个表中存在的另一个表的主键称此表的外键。</p>
-<h5 id="35、-mysql中-in-和-exists-区别">35、 mysql中 in 和 exists 区别</h5>
+<h1><span id="35-mysql中-in-和-exists-区别">35、 mysql中 in 和 exists 区别</span></h1>
 <p>mysql中的in语句是把外表和内表作hash 连接，而exists语句是对外表作loop循环，每次loop循环再对内表进行查询。</p>
 <p>一直大家都认为exists比in语句的效率要高，这种说法其实是不准确的。这个是要区分环境的。</p>
 <ul>
@@ -412,9 +412,9 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>not in 和not exists：如果查询语句使用了not in，那么内外表都进行全表扫描，没有用到索引；</li>
 <li>而not extsts的子查询依然能用到表上的索引。所以无论那个表大，用not exists都比not in要快。</li>
 </ul>
-<h5 id="36、drop、delete与truncate的区别">36、drop、delete与truncate的区别</h5>
+<h1><span id="36-drop-delete与truncate的区别">36、drop、delete与truncate的区别</span></h1>
 <p><img src="../img/mysql-all/image-11.png" alt=" "></p>
-<h5 id="37、SQL的生命周期">37、SQL的生命周期</h5>
+<h1><span id="37-sql的生命周期">37、SQL的生命周期</span></h1>
 <ol>
 <li>应用服务器与数据库服务器建立一个连接</li>
 <li>数据库进程拿到请求sql</li>
@@ -423,7 +423,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>通过步骤一的连接，发送结果到客户端</li>
 <li>关掉连接，释放资源</li>
 </ol>
-<h5 id="38、大表数据查询，怎么优化">38、大表数据查询，怎么优化</h5>
+<h1><span id="38-大表数据查询怎么优化">38、大表数据查询，怎么优化</span></h1>
 <ul>
 <li>优化shema、sql语句+索引；</li>
 <li>第二加缓存，memcached, redis；</li>
@@ -431,7 +431,7 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 <li>垂直拆分，根据你模块的耦合度，将一个大的系统分为多个小的系统，也就是分布式系统；</li>
 <li>水平切分，针对数据量大的表，这一步最麻烦，最能考验技术水平，要选择一个合理的sharding key, 为了有好的查询效率，表结构也要改动，做一定的冗余，应用也要改，sql中尽量带sharding key，将数据定位到限定的表上去查，而不是扫描全部的表；</li>
 </ul>
-<h5 id="39、MySQL的复制原理以及流程">39、MySQL的复制原理以及流程</h5>
+<h1><span id="39-mysql的复制原理以及流程">39、MySQL的复制原理以及流程</span></h1>
 <p><strong>主从复制</strong></p>
 <blockquote>
 <p>将主数据库中的DDL和DML操作通过二进制日志（BINLOG）传输到从数据库上，然后将这些日志重新执行（重做）；从而使得从数据库的数据与主数据库保持一致。</p>
@@ -466,16 +466,16 @@ mixed. 一种折中的方案,普通操作使用statement记录,当无法使用st
 第二步：salve开启一个I/O Thread，该线程在master打开一个普通连接，主要工作是binlog dump process。如果读取的进度已经跟上了master，就进入睡眠状态并等待master产生新的事件。I/O线程最终的目的是将这些事件写入到中继日志中。<br>
 第三步：SQL Thread会读取中继日志，并顺序执行该日志中的SQL事件，从而与主数据库中的数据保持一致。</p>
 </blockquote>
-<h5 id="40、数据表损坏的修复方式有哪些">40、数据表损坏的修复方式有哪些</h5>
+<h1><span id="40-数据表损坏的修复方式有哪些">40、数据表损坏的修复方式有哪些</span></h1>
 <p>使用 myisamchk 来修复，具体步骤：</p>
 <p>1）修复前将mysql服务停止。<br>
 2）打开命令行方式，然后进入到mysql的/bin目录。<br>
 3）执行myisamchk –recover 数据库所在路径/*.MYI</p>
-<h5 id="41、MySQL的索引要使用B-树而不是其它树形结构">41、MySQL的索引要使用B+树而不是其它树形结构</h5>
+<h1><span id="41-mysql的索引要使用b树而不是其它树形结构">41、MySQL的索引要使用B+树而不是其它树形结构</span></h1>
 <p>因为B树不管叶子节点还是非叶子节点，都会保存数据，这样导致在非叶子节点中能保存的指针数量变少（有些资料也称为扇出），指针少的情况下要保存大量数据，只能增加树的高度，导致IO操作变多，查询性能变低；</p>
-<h5 id="SQL执行顺序">SQL执行顺序</h5>
+<h1><span id="sql执行顺序">SQL执行顺序</span></h1>
 <p>SQL的执行顺序：from—where–group by—having—select—order by</p>
-<h5 id="InnoDB的内存架构">InnoDB的内存架构</h5>
+<h1><span id="innodb的内存架构">InnoDB的内存架构</span></h1>
 <p>主要分为三大块，缓冲池（Buffer Pool）、重做缓冲池（Redo Log Buffer）和额外内存池</p>
 <p>缓冲池<br>
 InnoDB为了做数据的持久化，会将数据存储到磁盘上。但是面对大量的请求时，CPU的处理速度和磁盘的IO速度之间差距太大，为了提高整体的效率， InnoDB引入了缓冲池。</p>
@@ -485,4 +485,4 @@ InnoDB为了做数据的持久化，会将数据存储到磁盘上。但是面�
 <blockquote>
 <p>图片来源网络,侵权删除.</p>
 </blockquote>
-</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/es-mark/">ES 总结</a><a class="next" href="/liuzexin.github.io/redis-all/">Redis 小记</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/qqnews-bottompage-upgrade/">腾讯新闻底层页升级技术总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/es-mark/">ES 总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a><a class="next" href="/liuzexin.github.io/sort-all/">排序算法汇总</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/qqnews-bottompage-upgrade/">腾讯新闻底层页升级技术总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/golang-good-code/">如何真正写好Golang代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/mysql-all/">MYSQL 知识随笔</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
