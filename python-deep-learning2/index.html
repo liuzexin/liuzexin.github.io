@@ -7,14 +7,17 @@ html.dataset.dark = localStorage.dark || prefersDarkMode.matches;
 toggle.addEventListener('click', () => {
 localStorage.dark = !(html.dataset.dark == 'true');
 html.dataset.dark = localStorage.dark;
-});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">读《Python深度学习（第2版）》-弗朗索瓦·肖莱 笔记</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">读《Python深度学习（第2版）》-弗朗索瓦·肖莱 笔记</h1><div class="post-meta">2024</div><div class="post-content"><h2><span id="第一章-什么是深度学习">第一章 什么是深度学习</span></h2>
+});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">读《Python深度学习（第2版）》-弗朗索瓦·肖莱 笔记</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">读《Python深度学习（第2版）》-弗朗索瓦·肖莱 笔记</h1><div class="post-meta">2024</div><div class="post-content"><h1><span id="读python深度学习第2版-弗朗索瓦肖莱-笔记">读《Python深度学习（第2版）》-弗朗索瓦·肖莱 笔记</span></h1>
+<p>[toc]</p>
+<h2><span id="第一章-什么是深度学习">第一章 什么是深度学习</span></h2>
 <p>人工智能 机器学习 深度学习中的关系<br>
 <img src="../img/python-deep-learning2/Image.png" alt></p>
 <p>机器学习是一种新的编程范式：<br>
-![](…/img/python-deep-learning2/Image [1].png)</p>
+<img src="../img/python-deep-learning2/Image-1.png" alt></p>
 <p>深度学习是机器学习的一个分支领域：它是从数据中学习表示的一种新方法，强调从连续的层中学习，这些层对应于越来越有意义的表示。深度学习之“深度”并不是说这种方法能够获取更深层次的理解，而是指一系列连续的表示层。数据模型所包含的层数被称为该模型的深度（depth）。这一领域的其他名称还有分层Å表示学习（layered representations learning）和层级表示学习（hierarchical representations learning）。</p>
+<p><img src="../img/python-deep-learning2/Image-2.png" alt></p>
 <p>你可以将深度神经网络看作多级信息蒸馏（information distillation）过程：信息穿过连续的过滤器，其纯度越来越高（对任务的帮助越来越大）。</p>
-<p>![](…/img/python-deep-learning2/Image [2].png)</p>
+<p><img src="../img/python-deep-learning2/Image-3.png" alt></p>
 <h3><span id="补充激活函数">补充激活函数</span></h3>
 <p>1. Sigmoid函数：Sigmoid函数可以将任意的实数映射到0和1之间，使得输出可以解释为概率。它的公式为f(x) = 1 / (1 + e^-x)。但是，Sigmoid函数在输入值的绝对值很大的时候，会出现梯度消失的问题，这会导致网络训练困难。<br>
 2. Tanh函数：Tanh函数可以将任意的实数映射到-1和1之间。它的公式为f(x) = (e^x - e^-x) / (e^x + e^-x)。Tanh函数相比于Sigmoid函数，其输出以0为中心，这是一个很大的优点。但是，Tanh函数同样存在梯度消失的问题。<br>
@@ -23,11 +26,11 @@ html.dataset.dark = localStorage.dark;
 5. Softmax函数：Softmax函数通常用于多分类神经网络的输出层。它可以将一组数值映射为概率分布。其公式为f(x_j) = e^x_j / Σ(e^x_i)，其中i和j都是输入向量的索引。</p>
 <h3><span id="三张图理解深度学习">三张图理解深度学习</span></h3>
 <p>每层对输入数据所做的具体操作保存在该层的<strong>权重（weight）中</strong>，权重实质上就是一串数字。用术语来讲，每层实现的变换由其权重来参数化（parameterize）​，如图1-7所示。权重有时也被称为该层的参数（parameter）。</p>
-<p>![](…/img/python-deep-learning2/Image [3].png)<br>
+<p><img src="../img/python-deep-learning2/Image-4.png" alt><br>
 神经网络由其权重来参数化</p>
-<p>![](…/img/python-deep-learning2/Image [4].png)</p>
+<p><img src="../img/python-deep-learning2/Image-5.png" alt></p>
 <p>若要控制某个事物，首先需要能够观察它。若要控制神经网络的输出，需要能够衡量该输出与预期结果之间的距离。这是神经网络<strong>损失函数（loss function）<strong>的任务，该函数有时也被称为目标函数（objective function）或</strong>代价函数（cost function）</strong>。</p>
-<p>![](…/img/python-deep-learning2/Image [5].png)<br>
+<p><img src="../img/python-deep-learning2/Image-6.png" alt><br>
 由于一开始对神经网络的权重进行<strong>随机赋值</strong>，因此神经网络仅实现了一系列<strong>随机变换</strong>，其输出值自然与理想结果相去甚远，相应地，损失值也很大。但是，神经网络每处理一个示例，权重值都会向着正确的方向微调，损失值也相应减小。这就是训练循环（training loop），将这种循环重复足够多的次数（通常是对数千个示例进行数十次迭代），得到的权重值可以使损失函数最小化</p>
 <blockquote>
 <p>补充：学习率是一个超参数，用于控制神经网络权重调整的速度或步长。</p>
@@ -64,7 +67,7 @@ dy/dx = dy/du * du/dx<br>
 <p>残差通常指的是实际观察值与模型预测值之间的差异</p>
 </blockquote>
 <h3><span id="反向传播的基本步骤">反向传播的基本步骤</span></h3>
-<p>![](…/img/python-deep-learning2/Image [6].png)</p>
+<p><img src="../img/python-deep-learning2/Image-7.png" alt></p>
 <ol>
 <li>前向传播（Forward Pass）：将输入数据通过神经网络，计算每一层的输出，最终得到预测结果。</li>
 <li>计算损失（Loss Calculation）：使用损失函数计算预测结果与真实标签之间的误差。</li>
@@ -232,7 +235,7 @@ b1_new = b1 - learning_rate * dL/db1</p>
 <p>◆ 对于向量数据，最常见的三类机器学习任务是：二分类问题、多分类问题和标量回归问题。本章每一节的“小结”都总结了你应从这些任务中学到的要点。回归问题使用的损失函数和评估指标都与分类问题不同。将原始数据输入神经网络之前，通常需要对其进行预处理。如果数据特征具有不同的取值范围，应该先进行预处理，对每个特征单独进行缩放。随着训练的进行，神经网络最终会过拟合，并在前所未见的数据上得到较差的结果。如果训练数据不是很多，那么可以使用只有一两个中间层的小模型，以避免严重的过拟合。如果数据被划分为多个类别，那么中间层过小可能会造成信息瓶颈。如果要处理的数据很少，那么K折交叉验证有助于可靠地评估模型。</p>
 <h2><span id="第5章-机器学习基础">第5章 机器学习基础</span></h2>
 <p>机器学习的根本问题在于优化与泛化之间的矛盾。优化（optimization）是指调节模型使其在训练数据上得到最佳性能的过程（对应机器学习中的学习），泛化（generalization）则是指训练好的模型在前所未见的数据上的性能。</p>
-<p>![](…/img/python-deep-learning2/Image [1].png)</p>
+<p><img src="../img/python-deep-learning2/Image-8.png" alt></p>
 <p>典型的过拟合情况训练开始时，优化和泛化是相关的：训练数据上的损失越小，测试数据上的损失也越小</p>
 <h3><span id="噪声问题">噪声问题</span></h3>
 <p>数据一定程度上决定了模型的精度因此需要在训练数据前尽可能避免噪声：<br>
@@ -285,9 +288,9 @@ b1_new = b1 - learning_rate * dL/db1</p>
 <h3><span id="卷积运算">卷积运算</span></h3>
 <p>◆ Dense层与卷积层的根本区别在于，Dense层从输入特征空间中学到的是全局模式（比如对于MNIST数字，全局模式就是涉及所有</p>
 <p>◆ 像素的模式），而卷积层学到的是局部模式（对于图像来说，局部模式就是在输入图像的二维小窗口中发现的模式）<br>
-![](…/img/python-deep-learning2/Image [2].png)</p>
+<img src="../img/python-deep-learning2/Image-9.png" alt></p>
 <p>◆ 卷积神经网络学到的模式具有平移不变性（translation invariant）。在图片右下角学到某个模式之后，卷积神经网络可以在任何位置（比如左上角）识别出这个模式。<br>
-![](…/img/python-deep-learning2/Image [3].png)</p>
+<img src="../img/python-deep-learning2/Image-10.png" alt></p>
 <p>◆ 卷积神经网络可以学到模式的空间层次结构（spatial hierarchies of patterns）。第一个卷积层学习较小的局部模式（比如边缘），第二个卷积层学习由第一层特征组成的更大的模式，以此类推，如图8-2所示。这使得卷积神经网络能够有效地学习越来越复杂、越来越抽象的视觉概念，因为视觉世界本质上具有空间层次结构</p>
 <p>◆ 深度轴的不同通道不再像RGB那样代表某种颜色，而是代表滤波器（filter）</p>
 <h3><span id="最大汇聚运算">最大汇聚运算</span></h3>
@@ -309,7 +312,7 @@ b1_new = b1 - learning_rate * dL/db1</p>
 <p>为了解决梯度消失的问题，研究者们提出了很多方法，如使用ReLU等不会导致梯度消失的激活函数，使用预训练和逐层初始化等更好的权重初始化方法，以及使用<strong>残差网络</strong>（ResNet）等可以缓解梯度消失的网络结构</p>
 <p>如果函数链太长，那么这些噪声会盖过梯度信息，反向传播就会停止工作，模型也就根本无法训练。这就是梯度消失</p>
 <h3><span id="残差链接">残差链接</span></h3>
-<p>![](…/img/python-deep-learning2/Image [4].png)</p>
+<p><img src="../img/python-deep-learning2/Image-11.png" alt></p>
 <p>只需强制要求链中的每个函数都是无损的，即能够保留前一个输入中所包含的信息（不含噪声）。实现这一点的最简单的方法是使用残差连接。具体实现很简单：只需将一层或一个层块的输入添加到它的输出中，利用残差连接，你可以构建任意深度的神经网络，而无须担心梯度消失问题。</p>
 <p>◆ 深度学习可以处理三项基本的计算机视觉任务：图像分类、图像分割和目标检测。遵循现代卷积神经网络架构的最佳实践，有助于充分发挥模型的作用。一些最佳实践包括使用残差连接、批量规范化和深度可分离卷积。卷积神经网络学习的表示很容易可视化，也就是说，卷积神经网络不是黑盒子。你既可以将卷积神经网络学到的滤波器可视化，也可以将类激活热力图可视化。</p>
 <h2><span id="第10章-深度学习处理时间序列">第10章 深度学习处理时间序列</span></h2>
@@ -318,10 +321,10 @@ b1_new = b1 - learning_rate * dL/db1</p>
 <h3><span id="rnn基础结构">RNN基础结构</span></h3>
 <p>RNN采用相同的原理（不过是一个极其简化的版本）​。它处理序列的方式是：遍历所有序列元素，同时保存一个状态（state）​，其中包含与已查看内容相关的信息。实际上，RNN是一种具有内部环路（loop）的神经网络.</p>
 <p>◆ 它是一个序列，其中因果关系和顺序都很重要。</p>
-<p>![](…/img/python-deep-learning2/Image [5].png)</p>
+<p><img src="../img/python-deep-learning2/Image-12.png" alt></p>
 <h3><span id="lstm结构">LSTM结构</span></h3>
 <p>LSTM通过引入门控机制（包括输入门、遗忘门和输出门）和细胞状态（cell state）来解决这个问题。细胞状态是一种在时间步之间传递的信息，可以视为LSTM的“长期记忆”，而隐藏状态则可以视为“短期记忆”。门控机制则决定了什么信息会被遗忘，什么信息会被更新，以及什么信息会被输出。</p>
-<p>![](…/img/python-deep-learning2/Image [6].png)</p>
+<p><img src="../img/python-deep-learning2/Image-13.png" alt></p>
 <p>◆ 这其实就是LSTM的原理：保存信息以便后续使用，从而防止较早的信号在处理过程中逐渐消失。这应该会让你想到第9章介绍过的残差连接，二者的思路几乎相同.</p>
 <p>◆ 这种约束的选择（如何实现RNN单元）最好留给优化算法来完成（比如遗传算法或强化学习过程），而不是让人类工程师来完成。那将是未来我们构建模型的方式。总之，你不需要理解LSTM单元的具体架构。<strong>作为人类，你不需要理解它</strong>，而只需记住LSTM单元的作用：允许过去的信息稍后重新进入，从而解决梯度消失问题。</p>
 <h3><span id="降低过拟合">降低过拟合</span></h3>
@@ -331,9 +334,9 @@ b1_new = b1 - learning_rate * dL/db1</p>
 <h3><span id="tf-idf">TF-IDF</span></h3>
 <p>◆ 最佳实践是一种叫作TF-IDF规范化（TF-IDF normalization）的方法。TF-IDF的含义是“词频–逆文档频次”。</p>
 <h3><span id="词嵌入">词嵌入</span></h3>
-<p>![](…/img/python-deep-learning2/Image [1].png)</p>
+<p><img src="../img/python-deep-learning2/Image-14.png" alt></p>
 <h3><span id="词向量">词向量</span></h3>
-<p>![](…/img/python-deep-learning2/Image [2].png)</p>
+<p><img src="../img/python-deep-learning2/Image-15.png" alt></p>
 <h3><span id="transformer架构">Transformer架构</span></h3>
 <h4><span id="多头注意力机制">多头注意力机制</span></h4>
 <p>◆ 多头”是指：自注意力层的输出空间被分解为一组独立的子空间，对这些子空间分别进行学习，也就是说，初始的查询、键和值分别通过3组独立的密集投影，生成3个独立的向量。每个向量都通过神经注意力进行处理，然后将多个输出拼接为一个输出序列。</p>
@@ -341,7 +344,7 @@ b1_new = b1 - learning_rate * dL/db1</p>
 <p>对于任意足够深的架构，残差连接都是必需的</p>
 </blockquote>
 <p>◆ 2017年，我和我的团队系统分析了各种文本分类方法在不同类型的文本数据集上的性能。我们发现了一个显著、令人惊讶的经验法则，可用于决定应该使用词袋模型还是序列模型——它是一个黄金常数。事实证明，在处理新的文本分类任务时，你应该密切关注训练数据中的样本数与每个样本的平均词数之间的比例，如图11-11所示。如果这个比例很小（小于1500），那么二元语法模型的性能会更好（它还有一个优点，那就是训练速度和迭代速度更快）。如果这个比例大于1500，那么应该使用序列模型。换句话说，如果拥有大量可用的训练数据，并且每个样本相对较短，那么序列模型的效果更好。</p>
-<p>![](…/img/python-deep-learning2/Image [3].png)</p>
+<p><img src="../img/python-deep-learning2/Image-16.png" alt></p>
 <p>◆ 源序列表示必须完整保存在编码器状态向量中，这极大地限制了待翻译句子的长度和复杂度。这有点像一个人完全凭记忆翻译一句话，并且在翻译时只能看一次源句子。RNN很难处理非常长的序列，因为它会逐渐忘记过去。等到处理序列中的第100个词元时，模型关于序列开始的信息已经几乎没有了。这意味着基于RNN的模型无法保存长期上下文，而这对于翻译长文档而言至关重要</p>
 <p>◆ 因果填充对于成功训练序列到序列Transformer来说至关重要。RNN查看输入的方式是每次只查看一个时间步，因此只能通过查看第0～N个时间步来生成输出第N个时间步（目标序列的第N+1个词元）。与RNN不同，TransformerDecoder是不考虑顺序的，它一次性查看整个目标序列。如果它可以读取整个输入，那么它只需学习将输入的第N+1个时间步复制到输出中的第N个位置即可。这样的模型可以达到完美的训练精度，但在推断过程中，它显然是完全没有用的，因为它无法读取大于N的输入时间步。</p>
 <p>◆ 自然语言处理（NLP）模型有两类：一类是词袋模型，它可以处理一组单词或N元语法，而不考虑其顺序；另一类是考虑词序的序列模型。词袋模型由多个Dense层组成，而序列模型可以是RNN、一维卷积神经网络或Transformer。</p>
@@ -366,4 +369,4 @@ b1_new = b1 - learning_rate * dL/db1</p>
 5.立体数据：三维卷积神经网络。</p>
 <h2><span id="总结">总结</span></h2>
 <p>读完整本书,了解了深度学习的一些核心概念:神经网络是如何构建的,如何随着梯度寻找极值,什么超参数什么是参数等等,以及如何处理梯度消失,梯度爆炸,过拟合,欠拟合问题实际生产过程中需要面对的问题.唯一的遗憾是没有使用这本书的案例进行实际的编码,下本书会进行实际操作《机器学习实战》。整体上是一本不错的书,推荐大家阅读.</p>
-</div><div class="tags"></div><div class="post-nav"><a class="next" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.  历史文章 CSDN https://blog.csdn.net/lzx_victory?type=blog</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-deep-learning2/">读《Python深度学习（第2版）》-弗朗索瓦·肖莱 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/qqnews-bottompage-upgrade/">腾讯新闻底层页升级技术总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/more-effective-c/">读More Effective c++ 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
+</div><div class="tags"></div><div class="post-nav"><a class="next" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.  历史文章 CSDN https://blog.csdn.net/lzx_victory?type=blog</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-deep-learning2/">读《Python深度学习（第2版）》-弗朗索瓦·肖莱 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/qqnews-bottompage-upgrade/">腾讯新闻底层页升级技术总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/more-effective-c/">读More Effective c++ 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/golang-good-code/">如何真正写好Golang代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
