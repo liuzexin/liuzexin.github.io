@@ -1,0 +1,446 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="历史文章 CSDN https://blog.csdn.net/lzx_victory?type=blog"><title>Linux 系统机制总结 | Eddison</title><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/liuzexin.github.io/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/liuzexin.github.io/favicon.ico"><link rel="apple-touch-icon" href="/liuzexin.github.io/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/liuzexin.github.io/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><div class="darkmode-toggle">🌓</div><script>var prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+var toggle = document.querySelector('.darkmode-toggle');
+var html = document.querySelector('html');
+
+html.dataset.dark = localStorage.dark || prefersDarkMode.matches;
+
+toggle.addEventListener('click', () => {
+localStorage.dark = !(html.dataset.dark == 'true');
+html.dataset.dark = localStorage.dark;
+});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Linux 系统机制总结</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Linux 系统机制总结</h1><div class="post-meta">2022</div><div class="post-content"><!--toc-->
+<h5><span id="1-进程间的通信方式">1、进程间的通信方式</span></h5>
+<p><strong>管道</strong></p>
+<blockquote>
+<p>管道包括三种:</p>
+</blockquote>
+<ul>
+<li>✔普通管道PIPE： 通常有两种限制,一是单工,只能单向传输;二是只能在父子或者兄弟进程间使用.</li>
+<li>✔流管道s_pipe: 去除了第一种限制,为半双工，只能在父子或兄弟进程间使用，可以双向传输.</li>
+<li>✔命名管道name_pipe：去除了第二种限制,可以在许多并不相关的进程之间进行通讯.</li>
+</ul>
+<p><strong>信号量</strong></p>
+<blockquote>
+<p>信号量是一个计数器，可以用来控制多个进程对共享资源的访问。它常作为一种锁机制，防止某进程正在访问共享资源时，其他进程也访问该资源。因此，主要作为进程间以及同一进程内不同线程之间的同步手段。</p>
+</blockquote>
+<p><strong>消息队列</strong></p>
+<blockquote>
+<p>消息队列是由消息的链表，存放在内核中并由消息队列标识符标识。消息队列克服了信号传递信息少、管道只能承载无格式字节流以及缓冲区大小受限等缺点。</p>
+</blockquote>
+<p><strong>信号</strong></p>
+<blockquote>
+<p>信号是一种比较复杂的通信方式，用于通知接收进程某个事件已经发生。</p>
+</blockquote>
+<p><strong>共享内存</strong></p>
+<blockquote>
+<p>共享内存就是映射一段能被其他进程所访问的内存，这段共享内存由一个进程创建，但多个进程都可以访问。共享内存是最快的 IPC 方式，它是针对其他进程间通信方式运行效率低而专门设计的。它往往与其他通信机制，如信号两，配合使用，来实现进程间的同步和通信。</p>
+</blockquote>
+<p><strong>套接字</strong></p>
+<blockquote>
+<p>套解口也是一种进程间通信机制，与其他通信机制不同的是，它可用于不同机器间的进程通信。</p>
+</blockquote>
+<h5><span id="2-管道是如何通信的">2、管道是如何通信的</span></h5>
+<blockquote>
+<p>管道是由内核管理的一个缓冲区，相当于我们放入内存中的一个纸条。管道的一端连接一个进程的输出。这个进程会向管道中放入信息。管道的另一端连接一个进程的输入，这个进程取出被放入管道的信息。一个缓冲区不需要很大，它被设计成为环形的数据结构，以便管道可以被循环利用。当管道中没有信息的话，从管道中读取的进程会等待，直到另一端的进程放入信息。当管道被放满信息的时候，尝试放入信息的进程会等待，直到另一端的进程取出信息。当两个进程都终结的时候，管道也自动消失。</p>
+</blockquote>
+<h5><span id="3-命名管道实现原理">3、命名管道实现原理</span></h5>
+<p><strong>命名管道定义</strong></p>
+<blockquote>
+<p>由于基于fork机制，所以管道只能用于父进程和子进程之间，或者拥有相同祖先的两个子进程之间 (有亲缘关系的进程之间)。为了解决这一问题，Linux提供了FIFO方式连接进程。FIFO又叫做命名管道(named PIPE)。</p>
+</blockquote>
+<p><strong>实现原理</strong></p>
+<blockquote>
+<p>FIFO (First in, First out)为一种特殊的文件类型，它在文件系统中有对应的路径。当一个进程以读®的方式打开该文件，而另一个进程以写(w)的方式打开该文件，那么内核就会在这两个进程之间建立管道，所以FIFO实际上也由内核管理，不与硬盘打交道。之所以叫FIFO，是因为管道本质上是一个先进先出的队列数据结构，最早放入的数据被最先读出来，从而保证信息交流的顺序。FIFO只是借用了文件系统(file system,命名管道是一种特殊类型的文件，因为Linux中所有事物都是文件，它在文件系统中以文件名的形式存在。)来为管道命名。写模式的进程向FIFO文件中写入，而读模式的进程从FIFO文件中读出。当删除FIFO文件时，管道连接也随之消失。FIFO的好处在于我们可以通过文件的路径来识别管道，从而让没有亲缘关系的进程之间建立连接</p>
+</blockquote>
+<h5><span id="4-什么是硬链接和软链接">4、什么是硬链接和软链接</span></h5>
+<p><strong>硬链接</strong></p>
+<blockquote>
+<p>由于 Linux 下的文件是通过索引节点(inode)来识别文件，硬链接可以认为是一个指针，指向文件索引节点的指针，系统并不为它重新分配 inode。每添加一个一个硬链接，文件的链接数就加 1 。<br>
+不足：<br>
+不可以在不同文件系统的文件间建立链接；<br>
+只有超级用户才可以为目录创建硬链接。</p>
+</blockquote>
+<p><strong>软链接</strong></p>
+<blockquote>
+<p>软链接克服了硬链接的不足，没有任何文件系统的限制，任何用户可以创建指向目录的符号链接。因而现在更为广泛使用，它具有更大的灵活性，甚至可以跨越不同机器、不同网络对文件进行链接。<br>
+不足：<br>
+因为链接文件包含有原文件的路径信息，所以当原文件从一个目录下移到其他目录中，再访问链接文件，系统就找不到了，而硬链接就没有这个缺陷，你想怎么移就怎么移；还有它要系统分配额外的空间用于建立新的索引节点和保存原文件的路径。实际场景下，基本是使用软链接。</p>
+</blockquote>
+<p><strong>总结区别如下</strong></p>
+<ul>
+<li>✔硬链接不可以跨分区，软件链可以跨分区。</li>
+<li>✔硬链接指向一个 inode 节点，而软链接则是创建一个新的 inode 节点。</li>
+<li>✔删除硬链接文件，不会删除原文件，删除软链接文件，会把原文件删除。</li>
+</ul>
+<h5><span id="5-linux文件类型">5、linux文件类型</span></h5>
+<p><img src="en-resource://database/4993:1" alt="7ade7c1a841cbca9d9b5a8136fed4b69.png"></p>
+<h5><span id="6-有哪些方面的因素会导致网站网站访问慢">6、有哪些方面的因素会导致网站网站访问慢</span></h5>
+<p><strong>服务器出口带宽不够用</strong></p>
+<blockquote>
+<p>本身服务器购买的出口带宽比较小。一旦并发量大的话，就会造成分给每个用户的出口带宽就小，访问速度自然就会慢。<br>
+服务器负载过大，导致响应不过来<br>
+以从两个方面入手分析：<br>
+分析系统负载，使用 w 命令或者 uptime 命令查看系统负载。如果负载很高，则使用 top 命令查看 CPU ，MEM 等占用情况，要么是 CPU 繁忙，要么是内存不够。<br>
+如果这二者都正常，再去使用 sar 命令分析网卡流量，分析是不是遭到了攻击。一旦分析出问题的原因，采取对应的措施解决，如决定要不要杀死一些进程，或者禁止一些访问等。</p>
+</blockquote>
+<p><strong>数据库瓶颈</strong></p>
+<blockquote>
+<p>如果慢查询比较多。那么就要开发人员或 DBA 协助进行 SQL 语句的优化。<br>
+如果数据库响应慢，考虑可以加一个数据库缓存，如 Redis 等。然后，也可以搭建 MySQL 主从，一台 MySQL 服务器负责写，其他几台从数据库负责读。</p>
+</blockquote>
+<p><strong>网站开发代码没有优化好</strong></p>
+<blockquote>
+<p>例如 SQL 语句没有优化，导致数据库读写相当耗时。</p>
+</blockquote>
+<h5><span id="7-说一说进程和线程以及它们的区别">7、说一说进程和线程以及它们的区别</span></h5>
+<ul>
+<li>进程是具有一定功能的程序关于某个数据集合上的一次运行活动，进程是系统进行资源调度和分配的一个独立单位。</li>
+<li>线程是进程的实体，是CPU调度和分派的基本单位，它是比进程更小的能独立运行的基本单位。</li>
+</ul>
+<p>一个进程可以有多个线程，多个线程也可以并发执行</p>
+<h5><span id="8-线程同步的方式有哪些">8、线程同步的方式有哪些？</span></h5>
+<ul>
+<li>互斥量：采用互斥对象机制，只有拥有互斥对象的线程才有访问公共资源的权限。因为互斥对象只有一个，所以可以保证公共资源不会被多个线程同时访问。</li>
+<li>信号量：它允许同一时刻多个线程访问同一资源，但是需要控制同一时刻访问此资源的最大线程数量。</li>
+<li>事件（信号）：通过通知操作的方式来保持多线程同步，还可以方便的实现多线程优先级的比较操作。</li>
+</ul>
+<h5><span id="9-什么是缓冲区溢出有什么危害其原因是什么">9、什么是缓冲区溢出？有什么危害？其原因是什么？</span></h5>
+<p>缓冲区溢出是指当计算机向缓冲区填充数据时超出了缓冲区本身的容量，溢出的数据覆盖在合法数据上。</p>
+<p>危害有以下两点：</p>
+<ul>
+<li>程序崩溃，导致拒绝额服务</li>
+<li>跳转并且执行一段恶意代码</li>
+</ul>
+<p>造成缓冲区溢出的主要原因是程序中没有仔细检查用户输入。</p>
+<h5><span id="10-什么是死锁死锁产生的条件">10、什么是死锁？死锁产生的条件？</span></h5>
+<blockquote>
+<p>在两个或者多个并发进程中，如果每个进程持有某种资源而又等待其它进程释放它或它们现在保持着的资源，在未改变这种状态之前都不能向前推进，称这一组进程产生了死锁。通俗的讲就是两个或多个进程无限期的阻塞、相互等待的一种状态。</p>
+</blockquote>
+<p>死锁产生的四个条件（有一个条件不成立，则不会产生死锁）</p>
+<ul>
+<li>互斥条件：一个资源一次只能被一个进程使用</li>
+<li>请求与保持条件：一个进程因请求资源而阻塞时，对已获得资源保持不放</li>
+<li>不剥夺条件：进程获得的资源，在未完全使用完之前，不能强行剥夺</li>
+<li>循环等待条件：若干进程之间形成一种头尾相接的环形等待资源关系</li>
+</ul>
+<p>死锁解决的方法<br>
+死锁防止的策略就是至少破坏这四个条件其中一项。</p>
+<ul>
+<li>死锁防止</li>
+</ul>
+<blockquote>
+<p><strong>打破互斥条件</strong>：改造独占性资源为虚拟资源，大部分资源已无法改造。<br>
+<strong>打破不可抢占条件</strong>：当一进程占有一独占性资源后又申请一独占性资源而无法满足，则退出原占有的资源。<br>
+<strong>打破占有且申请条件</strong>：采用资源预先分配策略，即进程运行前申请全部资源，满足则运行，不然就等待，这样就不会占有且申请。<br>
+<strong>打破循环等待条件</strong>：实现资源有序分配策略，对所有设备实现分类编号，所有进程只能采用按序号递增的形式申请资源。</p>
+</blockquote>
+<ul>
+<li>死锁避免</li>
+<li>死锁检测和恢复</li>
+</ul>
+<p>避免死锁算法<br>
+<strong>银行家算法</strong></p>
+<blockquote>
+<p>来源于银行的借贷业务，一定数量的本金要应多个客户的借贷周转，为了防止银行家资金无法周转而倒闭，对每一笔贷款，必须考察其是否能限期归还。在操作系统中研究资源分配策略时也有类似问题，系统中有限的资源要供多个进程使用，必须保证得到的资源的进程能在有限的时间内归还资源，以供其他进程使用资源。如果资源分配不得到就会发生进程循环等待资源，则进程都无法继续执行下去的死锁现象。<br>
+把一个进程需要和已占有资源的情况记录在进程控制中，假定进程控制块PCB其中“状态”有就绪态、等待态和完成态。当进程在处于等待态时，表示系统不能满足该进程当前的资源申请。“资源需求总量”表示进程在整个执行过程中总共要申请的资源量。显然，每个进程的资源需求总量不能超过系统拥有的资源总数， 银行算法进行资源分配可以避免死锁。</p>
+</blockquote>
+<p>如何避免死锁？</p>
+<ol>
+<li>正确的顺序获得锁</li>
+<li>超时放弃</li>
+</ol>
+<p>死锁检测和解除<br>
+1、先检测然后解除死锁</p>
+<blockquote>
+<p>常用的实施方法是撤销或挂起一些进程，以便回收一些资源，再将这些资源分配给已处于阻塞状态的进程，使之转为就绪状态，以继续运行。死锁的检测和解除措施，有可能使系统获得较好的资源利用率和吞吐量，但在实现上难度也最大。</p>
+</blockquote>
+<p>消除死锁的几种方式</p>
+<ul>
+<li>最简单、最常用的方法就是进行系统的重新启动，不过这种方法代价很大，它意味着在这之前所有的进程已经完成的计算工作都将付之东流，包括参与死锁的那些进程，以及未参与死锁的进程；</li>
+<li>撤消进程，剥夺资源。终止参与死锁的进程，收回它们占有的资源，从而解除死锁。</li>
+<li>进程回退策略，即让参与死锁的进程回退到没有发生死锁前某一点处，并由此点处继续执行，以求再次执行时不再发生死锁</li>
+</ul>
+<h5><span id="11-进程有哪几种状态">11、进程有哪几种状态？</span></h5>
+<ul>
+<li>就绪状态：进程已获得除处理机以外的所需资源，等待分配处理机资源</li>
+<li>运行状态：占用处理机资源运行，处于此状态的进程数小于等于CPU数</li>
+<li>阻塞状态： 进程等待某种条件，在条件满足之前无法执行</li>
+</ul>
+<h5><span id="12-分页和分段有什么区别">12、分页和分段有什么区别？</span></h5>
+<ul>
+<li>段是信息的逻辑单位，它是根据用户的需要划分的，因此段对用户是可见的；页是信息的物理单位，是为了管理主存的方便而划分的，对用户是透明的。</li>
+<li>段的大小不固定，有它所完成的功能决定；</li>
+<li>页大大小固定，由系统决定段向用户提供二维地址空间；</li>
+<li>页向用户提供的是一维地址空间</li>
+<li>段是信息的逻辑单位，便于存储保护和信息的共享，页的保护和共享受到限制。</li>
+</ul>
+<h5><span id="13-操作系统中进程调度策略有哪几种">13、操作系统中进程调度策略有哪几种？</span></h5>
+<p>FCFS(先来先服务)，优先级，时间片轮转，多级反馈</p>
+<h5><span id="14-进程同步有哪几种机制">14、进程同步有哪几种机制</span></h5>
+<p><strong>信号量机制</strong></p>
+<blockquote>
+<p>一个信号量只能置一次初值，以后只能对之进行p操作或v操作。 由此也可以看到，信号量机制必须有公共内存，不能用于分布式操作系统，这是它最大的弱点。</p>
+</blockquote>
+<p><strong>自旋锁</strong></p>
+<blockquote>
+<p>旋锁是为了保护共享资源提出的一种锁机制。 调用者申请的资源如果被占用，即自旋锁被已经被别的执行单元保持，则调用者一直循环在那里看是否该自旋锁的保持着已经释放了锁，自旋锁是一种比较低级的保护数据结构和代码片段的原始方式，可能会引起以下两个问题;<br>
+（1）死锁<br>
+（2）过多地占用CPU资源</p>
+</blockquote>
+<p><strong>管程</strong></p>
+<blockquote>
+<p>信号量机制功能强大，但使用时对信号量的操作分散，而且难以控制，读写和维护都很困难。因此后来又提出了一种集中式同步进程——管程。其基本思想是将共享变量和对它们的操作集中在一个模块中，操作系统或并发程序就由这样的模块构成。这样模块之间联系清晰，便于维护和修改，易于保证正确性。</p>
+</blockquote>
+<p><strong>会合</strong></p>
+<blockquote>
+<p>进程直接进行相互作用</p>
+</blockquote>
+<p><strong>分布式系统</strong></p>
+<blockquote>
+<p>由于在分布式操作系统中没有公共内存，因此参数全为值参，而且不可为指针。</p>
+</blockquote>
+<h5><span id="15-死锁的处理基本策略和常用方法">15、死锁的处理基本策略和常用方法</span></h5>
+<p>解决死锁的基本方法如下：</p>
+<p><strong>预防死锁</strong></p>
+<ul>
+<li>资源一次性分配：（破坏请求和保持条件）</li>
+<li>可剥夺资源：即当某进程新的资源未满足时，释放已占有的资源（破坏不可剥夺条件）</li>
+<li>资源有序分配法：系统给每类资源赋予一个编号，每一个进程按编号递增的顺序请求资源，释放则相反（破坏环路等待条件）</li>
+</ul>
+<p><strong>避免死锁</strong></p>
+<blockquote>
+<p>预防死锁的几种策略，会严重地损害系统性能。因此在避免死锁时，要施加较弱的限制，从而获得 较满意的系统性能。由于在避免死锁的策略中，允许进程动态地申请资源。因而，系统在进行资源分配之前预先计算资源分配的安全性。若此次分配不会导致系统进入不安全状态，则将资源分配给进程；否则，进程等待。其中最具有代表性的避免死锁算法是银行家算法。</p>
+</blockquote>
+<p>银行家算法通过先试探分配给该进程资源，然后通过安全性算法判断分配后的系统是否处于安全状态，若不安全则试探分配作废，让该进程继续等待。</p>
+<p><strong>检测死锁</strong></p>
+<blockquote>
+<p>首先为每个进程和每个资源指定一个唯一的号码；然后建立资源分配表和进程等待表</p>
+</blockquote>
+<p><strong>解除死锁</strong></p>
+<blockquote>
+<p>当发现有进程死锁后，便应立即把它从死锁状态中解脱出来，常采用的方法有：</p>
+</blockquote>
+<ul>
+<li><strong>剥夺资源</strong>：从其它进程剥夺足够数量的资源给死锁进程，以解除死锁状态；</li>
+<li><strong>撤消进程</strong>：可以直接撤消死锁进程或撤消代价最小的进程，直至有足够的资源可用，死锁状态.消除为止；所谓代价是指优先级、运行代价、进程的重要性和价值等。</li>
+</ul>
+<h5><span id="epoll对文件描述符有两种操作模式">epoll对文件描述符有两种操作模式</span></h5>
+<ul>
+<li>LT（level trigger电平模式）</li>
+<li>ET（edge trigger边缘模式）</li>
+</ul>
+<blockquote>
+<p>简单来讲，LT是epoll的默认操作模式，当epoll_wait函数检测到有事件发生并将通知应用程序，而应用程序不一定必须立即进行处理，这样epoll_wait函数再次检测到此事件的时候还会通知应用程序，直到事件被处理。</p>
+</blockquote>
+<blockquote>
+<p>而ET模式，只要epoll_wait函数检测到事件发生，通知应用程序立即进行处理，后续的epoll_wait函数将不再检测此事件。因此ET模式在很大程度上降低了同一个事件被epoll触发的次数，因此效率比LT模式高</p>
+</blockquote>
+<h5><span id="进程">进程</span></h5>
+<p><strong>进程的三种状态</strong><br>
+1、等待态：等待某个事件的完成；<br>
+2、就绪态：等待系统分配处理器以便运行<br>
+3、运行态：占有处理器正在运行</p>
+<p><strong>三种状态的转化</strong></p>
+<ul>
+<li><strong>运行态到等待态</strong>：往往是由于等待外设，等待主存等资源分配或等待人工干预而引起的；</li>
+<li><strong>等待态到就绪态</strong>：等待的条件已经满足，只需要分配到处理器后就能运行；</li>
+<li><strong>就绪态到运行态</strong>：系统按某种策略选中就绪队列中的一个进程占用处理器；</li>
+<li><strong>运行态到就绪态</strong>：由于外界原因是运行状态的进程让出处理器，例如有更高优先级的进程来抢占处理器，或时间片（时间片是系统分配给程序的运行时间）用完。</li>
+</ul>
+<p><strong>调度方式</strong></p>
+<ul>
+<li><strong>剥夺方式</strong>：当一个进程正在运行时，系统可以基于某种原则，剥夺已分配给他的处理机，将之分配给其他进程，剥夺原则有：优先权原则、短进程优先原则、时间片原则。</li>
+<li><strong>非剥夺方式</strong>：分配程序一旦吧处理机分配给某进程后便让他一直运行下去，知道进程完成或发生事件而阻塞时，才把处理机分配给另一个进程。</li>
+</ul>
+<p><strong>进程调度算法</strong><br>
+1、<strong>先来先服务调度算法</strong>（FCFS，first come first served）：谁第一个排队，谁就先被执行，在它执行过程中，不会中断它；<br>
+2、<strong>短作业优先调度算法</strong>（SJF，shortest job first）：对预计执行时间短的进程有限分配处理机，通常后来的短进程不会抢先正在执行的进程；对长进程非常不利，可能长时间得不到执行。<br>
+3、<strong>最高响应比优先法</strong>（HRRN，highest response radio next）：对于FCFS和SJF的平衡，FCFS方式只考虑每个作业的等待时间而未考虑执行时间的长短，而SJF只考虑了执行时间而未考虑等待时间的长短，因此两种算法在某种极端的情况下会带来某些不便。HRRN通过综合这两种情况算出响应比R，根据响应比完成调度。优点：长作业也有机会投入运行，缺点：每次调度前要计算响应比。<br>
+4、<strong>时间片轮转法</strong>（RR，Round-Robin）：采用剥夺方式，每个进程被分配一个时间段，按照在队列中的顺序交替执行；不利于处理紧急作业。<br>
+5、<strong>多级反馈队列</strong>（multilevel feedback queue）: UNIX使用这种调度算法 ；进程在进入待调度的队列等待时，首先进入优先级最高的Q1中等待；首先调度优先级高的队列中的进程。若高优先级队列中已经没有调度的进程，则调度次优先级队列的进程；同一队列中的各个进程按照时间片轮转调度；在低优先级队列中的进程在运行时，又有新到达的作业，那么在运行完这个时间片后，CPU马上分配给新到达的作业（剥夺）。</p>
+<h5><span id="介绍一下一个进程的内存管理">介绍一下一个进程的内存管理</span></h5>
+<blockquote>
+<p>在操作系统中，系统会给每个进程分配虚拟地址，虚拟地址的大小与处理器的位数有关，如32位处理器进程可分配4GB的虚拟内存供程序正常运行。这4GB的虚拟内存，存储单元从地址0开始进行排序，此地址为虚拟地址。</p>
+</blockquote>
+<p>该虚拟地址可分为五个部分：</p>
+<ul>
+<li>（1）栈区：由编译器自动分配释放 ，存放函数的参数值，局部变量的值等。其操作方式类似于数据结构中的栈。线程也有自己维护的栈。</li>
+<li>（2）堆区：程序动态申请的空间，由程序释放或其他方式释放，若没有释放，可能导致内存泄露。</li>
+<li>（3）全局区（静态区）：全局变量和静态变量的存储是放在一块的，初始化的全局变量和静态变量在一块区域， 未初始化的全局变量和未初始化的静态变量在相邻的另一块区域。程序结束后有系统释放 。</li>
+<li>（4）文字常量区：常量字符串就是放在这里的，程序结束后由系统释放。</li>
+<li>（5）程序代码区：存放函数体的二进制代码</li>
+</ul>
+<h5><span id="介绍下程序的内存释放">介绍下程序的内存释放</span></h5>
+<blockquote>
+<p>当一个程序运行完毕之后，它所使用的数据就不再需要。由于内存是有限的，所以它原来占据的内存空间也应该释放给别的程序使用。对于普通变量和数组，在程序结束运行以后，系统会自动将它们的空间回收。然而对于我们自己分配的堆内存空间，大多数系统都不会将它们回收。如果我们不人为地对它们进行回收，只借不还，那么系统资源就会枯竭，电脑的运行速度就会越来越慢，直至整个系统崩溃。我们把这种只申请空间不释放空间的情况称为内存泄露。<br>
+在C++中，确认申请的堆内存空间不再使用后，我们用delete操作符来释放堆内存空间。如果申请的是一个堆内存变量，则delete后的[]可以省略；如果申请的是一个堆内存数组，则该[]不能省略，否则还是会出现内存泄露。另外，我们也不难发现，delete后的指针就是通过new获得的指针，如果该指针的数据被修改或丢失，也可能造成内存泄露。</p>
+</blockquote>
+<h5><span id="http11-和-http20-的区别">HTTP1.1 和 HTTP2.0 的区别</span></h5>
+<ul>
+<li><strong>多路复用</strong>：HTTP2.0使用了多路复用的技术，做到同一个连接并发处理多个请求，而且并发请求的数量比HTTP1.1大了好几个数量级。</li>
+<li><strong>头部数据压缩</strong>：HTTP1.1不支持header数据的压缩，HTTP2.0使用HPACK算法对header的数据进行压缩，这样数据体积小了，在网络上传输就会更快。</li>
+<li><strong>服务器推送</strong>： 为了改善延迟，HTTP2.0引入了server push，它允许服务端在浏览器明确地请求之前推送资源给浏览器，免得客户端再次创建连接发送请求到服务器端获取。这样客户端可以直接从本地加载这些资源，不用再通过网络。</li>
+</ul>
+<h5><span id="说一下虚拟内存">说一下虚拟内存</span></h5>
+<blockquote>
+<p>在程序执行过程中，当所访问的信息不在内存时，由操作系统将所需要的部分调入内存,然后继续执行程序。另一方面，操作系统将内存中暂时不使用的内容换出到外存上，从而腾出空间存放将要调入内存的信息。这样，系统好像为用户提供了一个比实际内存大得多的存储器，称为虚拟存储器</p>
+</blockquote>
+<h5><span id="msl-ttl和rtt的区别">MSL、TTL和RTT的区别</span></h5>
+<ul>
+<li><strong>MSL</strong> 是Maximum Segment Lifetime英文的缩写，是“报文最大生存时间”，他是任何报文在网络上存在的最长时间，超过这个时间报文将被丢弃。</li>
+<li>ip头中有一个TTL域，<strong>TTL</strong>是 time to live的缩写，中文可以译为“生存时间”，这个生存时间是由源主机设置初始值但不是存的具体时间，而是存储了一个ip数据报可以经过的最大路由数，每经过一个处理他的路由器此值就减1，当此值为0则数据报将被丢弃，同时发送ICMP报文通知源主机。</li>
+<li><strong>RTT</strong>是客户到服务器往返所花时间（round-trip time，简称RTT），表示从发送端发送数据开始，到发送端收到来自接收端的确认（接收端收到数据后便立即发送确认），总共经历的时延。TCP含有动态估算RTT的算法。TCP还持续估算一个给定连接的RTT，这是因为RTT受网络传输拥塞程序的变化而变化。</li>
+</ul>
+<h5><span id="套接字socket的具体用法">套接字（Socket）的具体用法</span></h5>
+<blockquote>
+<p>Socket是应用层与TCP/IP协议族通信的中间软件抽象层，它是一组接口。在设计模式中，Socket其实就是一个门面模式，它把复杂的TCP/IP协议族隐藏在Socket接口后面，对用户来说，一组简单的接口就是全部，让Socket去组织数据，以符合指定的协议。</p>
+</blockquote>
+<h5><span id="tcp传输协议中如何解决丢包问题">TCP传输协议中如何解决丢包问题</span></h5>
+<p>TCP在不可靠的网络上实现可靠的传输，必然会有丢包。TCP是一个“流”协议，一个详细的包将会被TCP拆分为好几个包上传，也是将会把小的封裝成大的上传，这就是说TCP粘包和拆包难题。</p>
+<p>但是许多人有不同的理解。TCP协议本身确保传输的数据不会丢失完整性。如果在传输过程中发现数据丢失或数据包丢失，最大的可能性是在发送或接收程序的过程中出现问题。<br>
+<img src="en-resource://database/4994:1" alt="f9515a4d18338b2c1234f54f096ae9e5.jpeg"></p>
+<p>例如，服务器向客户端发送大量数据，并且发送频率非常高，因此发送链接中很可能会出现错误（1、程序处理逻辑错误；2、多线程同步问题；3、缓冲区溢出等）如果发送失败得不到处理，那么客户端收到得数据将少于理论数据，这将导致数据丢失与数据包丢失。这种现象，其实本质上来说不是丢包，也不是丢数据，只是因为程序处理有错误，导致有些数据没有成功地被socket发送出去。<br>
+为了满足TCP协议不丢包。TCP协议有如下规定：</p>
+<ul>
+<li><strong>数据分片</strong>：发送端对数据进行分片，接受端要对数据进行重组，由TCP确定分片的大小并控制分片和重组</li>
+<li><strong>到达确认</strong>：接收端接收到分片数据时，根据分片数据序号向发送端发送一个确认</li>
+<li><strong>超时重发</strong>：发送方在发送分片时设置超时定时器，如果在定时器超时之后没有收到相应的确认，重发分片数据</li>
+<li><strong>滑动窗口</strong>：TCP连接的每一方的接受缓冲空间大小固定，接收端只允许另一端发送接收端缓冲区所能接纳的数据，TCP在滑动窗口的基础上提供流量控制，防止较快主机致使较慢主机的缓冲区溢出</li>
+<li><strong>失序处理</strong>：作为IP数据报来传输的TCP分片到达时可能会失序，TCP将对收到的数据进行重新排序，将收到的数据以正确的顺序交给应用层;</li>
+<li><strong>重复处理</strong>：作为IP数据报来传输的TCP分片会发生重复，TCP的接收端必须丢弃重复的数据;</li>
+<li><strong>数据校验</strong>：TCP将保持它首部和数据的检验和，这是一个端到端的检验和，目的是检测数据在传输过程中的任何变化。如果收到分片的检验或有差错，TCP将丢弃这个分片，并不确认收到此报文段导致对端超时并重发</li>
+</ul>
+<h5><span id="udp丢包的问题">UDP丢包的问题</span></h5>
+<p><strong>一、主要丢包原因</strong><br>
+<strong>1、接收端处理时间过长导致丢包</strong></p>
+<blockquote>
+<p>调用recv方法接收端收到数据后，处理数据花了一些时间，处理完后再次调用recv方法，在这二次调用间隔里,发过来的包可能丢失。对于这种情况可以修改接收端，将包接收后存入一个缓冲区，然后迅速返回继续recv。</p>
+</blockquote>
+<p><strong>2、发送的包巨大丢包</strong></p>
+<blockquote>
+<p>虽然send方法会帮你做大包切割成小包发送的事情，但包太大也不行。例如超过50K的一个udp包，不切割直接通过send方法发送也会导致这个包丢失。这种情况需要切割成小包再逐个send。</p>
+</blockquote>
+<p><strong>3、发送的包较大，超过接受者缓存导致丢包</strong></p>
+<blockquote>
+<p>包超过mtu size数倍，几个大的udp包可能会超过接收者的缓冲，导致丢包。这种情况可以设置socket接收缓冲。以前遇到过这种问题，我把接收缓冲设置成64K就解决了。</p>
+</blockquote>
+<p><strong>4、发送的包频率太快</strong></p>
+<blockquote>
+<p>虽然每个包的大小都小于mtu size 但是频率太快，例如40多个mut size的包连续发送中间不sleep，也有可能导致丢包。这种情况也有时可以通过设置socket接收缓冲解决，但有时解决不了。所以在发送频率过快的时候还是考虑sleep一下吧。</p>
+</blockquote>
+<p><strong>5、局域网内不丢包，公网上丢包</strong></p>
+<blockquote>
+<p>这个问题我也是通过切割小包并sleep发送解决的。如果流量太大，这个办法也不灵了。总之udp丢包总是会有的，如果出现了用我的方法解决不了，还有这个几个方法： 要么减小流量，要么换tcp协议传输，要么做丢包重传的工作。</p>
+</blockquote>
+<h5><span id="解决udp丢包的问题">解决UDP丢包的问题</span></h5>
+<p><strong>1.发送频率过高导致丢包</strong></p>
+<blockquote>
+<p>很多人会不理解发送速度过快为什么会产生丢包，原因就是UDP的SendTo不会造成线程阻塞，也就是说，UDP的SentTo不会像TCP中的SendTo那样，直到数据完全发送才会return回调用函数，它不保证当执行下一条语句时数据是否被发送。（SendTo方法是异步的）这样，如果要发送的数据过多或者过大，那么在缓冲区满的那个瞬间要发送的报文就很有可能被丢失。至于对“过快”的解释，作者这样说：“A few packets a second are not an issue; hundreds or thousands may be an issue.”（一秒钟几个数据包不算什么，但是一秒钟成百上千的数据包就不好办了）。 要解决接收方丢包的问题很简单，首先要保证程序执行后马上开始监听（如果数据包不确定什么时候发过来的话），其次，要在收到一个数据包后最短的时间内重新回到监听状态，其间要尽量避免复杂的操作（比较好的解决办法是使用多线程回调机制）。</p>
+</blockquote>
+<p><strong>2.报文过大丢包</strong></p>
+<blockquote>
+<p>至于报文过大的问题，可以通过控制报文大小来解决，使得每个报文的长度小于MTU。以太网的MTU通常是1500 bytes，其他一些诸如拨号连接的网络MTU值为1280 bytes，如果使用speaking这样很难得到MTU的网络，那么最好将报文长度控制在1280 bytes以下。</p>
+</blockquote>
+<p><strong>3.发送方丢包</strong></p>
+<blockquote>
+<p>发送方丢包：内部缓冲区（internal buffers）已满，并且发送速度过快（即发送两个报文之间的间隔过短）； 接收方丢包：Socket未开始监听； 虽然UDP的报文长度最大可以达到64 kb，但是当报文过大时，稳定性会大大减弱。这是因为当报文过大时会被分割，使得每个分割块（翻译可能有误差，原文是fragmentation）的长度小于MTU，然后分别发送，并在接收方重新组合（reassemble），但是如果其中一个报文丢失，那么其他已收到的报文都无法返回给程序，也就无法得到完整的数据了。</p>
+</blockquote>
+<h5><span id="握手报文里都有哪些关键字段">握手报文里都有哪些关键字段</span></h5>
+<p>ISN代表什么？意义何在？<br>
+ISN，发送方的字节数据编号的原点，让对方生成一个合法的接收窗口。<br>
+ISN是固定不变的吗？<br>
+动态随机。</p>
+<h5><span id="同一进程间的线程共享的资源">同一进程间的线程共享的资源</span></h5>
+<p>a. 堆  由于堆是在进程空间中开辟出来的，所以它是理所当然地被共享的；因此new出来的都是共享的（16位平台上分全局堆和局部堆，局部堆是独享的）</p>
+<p>b. 全局变量 它是与具体某一函数无关的，所以也与特定线程无关；因此也是共享的</p>
+<p>c. 静态变量 虽然对于局部变量来说，它在代码中是“放”在某一函数中的，但是其存放位置和全局变量一样，存于堆中开辟的.bss和.data段，是共享的</p>
+<p>d. 文件等公用资源  这个是共享的，使用这些公共资源的线程必须同步。Win32 提供了几种同步资源的方式，包括信号、临界区、事件和互斥体。</p>
+<h5><span id="进程独享的资源">进程独享的资源</span></h5>
+<p>a. 栈 栈是独享的</p>
+<p>b. 寄存器  这个可能会误解，因为电脑的寄存器是物理的，每个线程去取值难道不一样吗？其实线程里存放的是副本，包括程序计数器PC</p>
+<p>线程共享的环境包括：进程代码段、进程的公有数据(利用这些共享的数据，线程很容易的实现相互之间的通讯)、进程打开的文件描述符、信号的处理器、进程的当前目录和进程用户ID与进程组ID。</p>
+<p>线程共享的环境包括：进程代码段、进程的公有数据(利用这些共享的数据，线程很容易的实现相互之间的通讯)、进程打开的文件描述符、信号的处理器、进程的当前目录和进程用户ID与进程组ID。</p>
+<p>【个性】进程拥有这许多共性的同时，还拥有自己的个性，才能实现并发性<br>
+1.线程ID</p>
+<blockquote>
+<p>每个线程都有自己的线程ID，这个ID在本进程中是唯一的。进程用此来标识线程。</p>
+</blockquote>
+<p>2.寄存器组的值</p>
+<blockquote>
+<p>由于线程间是并发运行的，每个线程有自己不同的运行线索，当从一个线程切换到另一个线程上 时，必须将原有的线程的寄存器集合的状态保存，以便将来该线程在被重新切换到时能得以恢复。</p>
+</blockquote>
+<p>3.线程的堆栈</p>
+<blockquote>
+<p>堆栈是保证线程独立运行所必须的。线程函数可以调用函数，而被调用函数中又是可以层层嵌套的，所以线程必须拥有自己的函数堆栈， 使得函数调用可以正常执行，不受其他线程的影响。</p>
+</blockquote>
+<p>4.错误返回码</p>
+<blockquote>
+<p>由于同一个进程中有很多个线程在同时运行，可能某个线程进行系统调用后设置了errno值，而在该 线程还没有处理这个错误，另外一个线程就在此时被调度器投入运行，这样错误值就有可能被修改。所以，不同的线程应该拥有自己的错误返回码变量。</p>
+</blockquote>
+<p>5.线程的信号屏蔽码</p>
+<blockquote>
+<p>由于每个线程所感兴趣的信号不同，所以线程的信号屏蔽码应该由线程自己管理。但所有的线程都 共享同样的信号处理器。</p>
+</blockquote>
+<p>6.线程的优先级</p>
+<h5><span id="缓存调度算法">缓存调度算法</span></h5>
+<p><strong>有哪几种实现方法</strong></p>
+<ul>
+<li>先进先出FIFO</li>
+<li>最近最少使用LRU</li>
+<li>最不经常使用算法LFU，根据在一段时间里页面被使用的次数选择出最少使用的页</li>
+<li>最优替换（不能实现）</li>
+</ul>
+<p><strong>LRU的实现方案</strong></p>
+<ol>
+<li>用一个数组来存储数据，给每一个数据项标记一个访问时间戳，每次插入新数据项的时候，先把数组中存在的数据项的时间戳自增，并将新数据项的时间戳置为0并插入到数组中。每次访问数组中的数据项的时候，将被访问的数据项的时间戳置为0。当数组空间已满时，将时间戳最大的数据项淘汰。</li>
+<li>利用一个链表来实现，每次新插入数据的时候将新数据插到链表的头部；每次缓存命中（即数据被访问），则将数据移到链表头部；那么当链表满的时候，就将链表尾部的数据丢弃。</li>
+<li>利用链表和hashmap。当需要插入新的数据项的时候，如果新数据项在链表中存在（一般称为命中），则把该节点移到链表头部，如果不存在，则新建一个节点，放到链表头部，若缓存满了，则把链表最后一个节点删除即可。在访问数据的时候，如果数据项在链表中存在，则把该节点移到链表头部，否则返回-1。这样一来在链表尾部的节点就是最近最久未访问的数据项。</li>
+</ol>
+<h5><span id="要是分布式缓存发生雪崩了怎么办要怎么防止发生">要是分布式缓存发生雪崩了怎么办，要怎么防止发生</span></h5>
+<p>​ 当缓存服务器重启或者大量缓存集中在某一个时间段失效，这样在失效的时候，也会给后端系统(比如DB)带来很大压力。通俗讲就是：缓存雪崩可能是因为数据未加载到缓存中，或者缓存同一时间大面积的失效，从而导致所有请求都去查数据库，导致数据库CPU和内存负载过高，甚至宕机。</p>
+<p>​ 如何防止：</p>
+<ol>
+<li>缓存失效或，通过加锁或队列来控制读取数据库的访问的线程数量，比如对某个key值运行一个线程访问数据库，其他线程等待</li>
+<li>不同的key，设置不同的过期时间，让环创失效的时间点尽量均匀</li>
+<li>做二级缓存，a1失效时候，访问a2，a1失效的时间设置为短期，a2为长期</li>
+</ol>
+<h2><span id="高并发系统的设计与实现">高并发系统的设计与实现</span></h2>
+<p>在开发高并发系统时有三把利器用来保护系统：缓存、降级和限流。</p>
+<p>缓存：缓存比较好理解，在大型高并发系统中，如果没有缓存数据库将分分钟被爆，系统也会瞬间瘫痪。使用缓存不单单能够提升系统访问速度、提高并发访问量，也是保护数据库、保护系统的有效方式。大型网站一般主要是“读”，缓存的使用很容易被想到。在大型“写”系统中，缓存也常常扮演者非常重要的角色。比如累积一些数据批量写入，内存里面的缓存队列（生产消费），以及HBase写数据的机制等等也都是通过缓存提升系统的吞吐量或者实现系统的保护措施。甚至消息中间件，你也可以认为是一种分布式的数据缓存。<br>
+降级：服务降级是当服务器压力剧增的情况下，根据当前业务情况及流量对一些服务和页面有策略的降级，以此释放服务器资源以保证核心任务的正常运行。降级往往会指定不同的级别，面临不同的异常等级执行不同的处理。根据服务方式：可以拒接服务，可以延迟服务，也有时候可以随机服务。根据服务范围：可以砍掉某个功能，也可以砍掉某些模块。总之服务降级需要根据不同的业务需求采用不同的降级策略。主要的目的就是服务虽然有损但是总比没有好。<br>
+限流：限流可以认为服务降级的一种，限流就是限制系统的输入和输出流量已达到保护系统的目的。一般来说系统的吞吐量是可以被测算的，为了保证系统的稳定运行，一旦达到的需要限制的阈值，就需要限制流量并采取一些措施以完成限制流量的目的。比如：延迟处理，拒绝处理，或者部分拒绝处理等等。</p>
+<h2><span id="常见的限流算法">常见的限流算法</span></h2>
+<p>常见的限流算法有计数器、漏桶和令牌桶算法。漏桶算法在分布式环境中消息中间件或者Redis都是可选的方案。发放令牌的频率增加可以提升整体数据处理的速度，而通过每次获取令牌的个数增加或者放慢令牌的发放速度和降低整体数据处理速度。而漏桶不行，因为它的流出速率是固定的，程序处理速度也是固定的。</p>
+<p>用户态和内核态的区别</p>
+<ul>
+<li><strong>用户空间</strong>：指的就是用户可以操作和访问的空间，这个空间通常存放我们用户自己写的数据等。</li>
+<li><strong>内核空间</strong>：是系统内核来操作的一块空间，这块空间里面存放系统内核的函数、接口等。</li>
+</ul>
+<blockquote>
+<p>在用户空间下执行，我们把此时运行得程序的这种状态成为用户态，而当这段程序执行在内核的空间执行时，这种状态称为内核态。</p>
+</blockquote>
+<p>用户态切换到内核态的3种方式：a.系统调用 b.异常  c.外围设备的中断</p>
+<p><strong>a.系统调用</strong></p>
+<blockquote>
+<p>这是用户进程主动要求切换到内核态的一种方式，用户进程通过系统调用申请操作系统提供的服务程序完成工作。</p>
+</blockquote>
+<p><strong>b.异常</strong></p>
+<blockquote>
+<p>当CPU在执行运行在用户态的程序时，发现了某些事件不可知的异常，这是会触发由当前运行进程切换到处理此<br>
+异常的内核相关程序中，也就到了内核态，比如缺页异常（硬中断）。</p>
+</blockquote>
+<p><strong>c.外围设备的中断</strong></p>
+<blockquote>
+<p>当外围设备完成用户请求的操作之后，会向CPU发出相应的中断信号，这时CPU会暂停执行下一条将要执行的指令<br>
+转而去执行中断信号的处理程序，如果先执行的指令是用户态下的程序，那么这个转换的过程自然也就发生了有<br>
+用户态到内核态的切换。比如硬盘读写操作完成，系统会切换到硬盘读写的中断处理程序中执行后续操作等。</p>
+</blockquote>
+<h5><span id="物理地址和虚拟地址">物理地址和虚拟地址</span></h5>
+<p><strong>物理地址</strong></p>
+<blockquote>
+<p>物理地址空间是实在的存在于计算机中的一个实体，在每一台计算机中保持唯一独立性。我们可以称它为物理内存；如在32位的机器上，物理空间的大小理论上可以达到2^32字节(4GB)，但如果实际装了512的内存，那么其物理地址真正的有效部分只有512MB = 512 * 1024 KB = 512 * 1024 * 1024 B（0x00000000~0x1fffffff）。其他部分是无效的。</p>
+</blockquote>
+<p><strong>虚拟地址</strong></p>
+<blockquote>
+<p>虚拟地址并不真实存在于计算机中。每个进程都分配有自己的虚拟空间，而且只能访问自己被分配使用的空间。理论上，虚拟空间受物理内存大小的限制，如给有4GB内存，那么虚拟地址空间的地址范围就应该是0x00000000~0xFFFFFFFF。每个进程都有自己独立的虚拟地址空间。这样每个进程都能访问自己的地址空间，这样做到了有效的隔离。</p>
+</blockquote>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/redis-all/">Redis 相关基础知识总结</a><a class="next" href="/liuzexin.github.io/more-effective-c/">读More Effective c++ 笔记</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/qqnews-bottompage-upgrade/">腾讯新闻底层页升级技术总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/golang-good-code/">如何真正写好Golang代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/kmp/">KMP算法实现思路</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>

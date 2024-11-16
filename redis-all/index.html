@@ -1,0 +1,315 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="历史文章 CSDN https://blog.csdn.net/lzx_victory?type=blog"><title>Redis 相关基础知识总结 | Eddison</title><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="https://unpkg.com/normalize.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/pure-min.css"><link rel="stylesheet" type="text/css" href="https://unpkg.com/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="https://unpkg.com/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/liuzexin.github.io/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/liuzexin.github.io/favicon.ico"><link rel="apple-touch-icon" href="/liuzexin.github.io/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/liuzexin.github.io/apple-touch-icon.png"><script type="text/javascript" src="https://unpkg.com/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="https://unpkg.com/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="https://unpkg.com/toastr/build/toastr.min.css"><div class="darkmode-toggle">🌓</div><script>var prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+var toggle = document.querySelector('.darkmode-toggle');
+var html = document.querySelector('html');
+
+html.dataset.dark = localStorage.dark || prefersDarkMode.matches;
+
+toggle.addEventListener('click', () => {
+localStorage.dark = !(html.dataset.dark == 'true');
+html.dataset.dark = localStorage.dark;
+});</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Redis 相关基础知识总结</h1><a id="logo" href="/liuzexin.github.io/.">Eddison</a><p class="description">欢迎来到这里交流</p></div><div id="nav-menu"><a class="current" href="/liuzexin.github.io/."><i class="fa fa-home"> 首页</i></a><a href="/liuzexin.github.io/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Redis 相关基础知识总结</h1><div class="post-meta">2022</div><div class="post-content"><!--toc-->
+<blockquote>
+<p>本文基于《Redis 设计与实现》 《Redis 开发与运维》、相关Redis博客文章进行总结。</p>
+</blockquote>
+<h5><span id="1redis是什么">1.redis是什么</span></h5>
+<blockquote>
+<p>Redis 是一个基于内存的高性能key-value数据库。<br>
+1、性能优秀，数据在内存中，读写速度非常快，支持并发10W QPS；<br>
+2、单进程单线程，是线程安全的，采用IO多路复用机制；<br>
+3、丰富的数据类型，支持字符串（strings）、散列（hashes）、列表（lists）、集合（sets）、有序集合（sorted sets）等；<br>
+4、支持数据持久化。可以将内存中数据保存在磁盘中，重启时加载；<br>
+5、主从复制，哨兵，高可用；<br>
+6、可以用作分布式锁；<br>
+7、可以作为消息中间件使用，支持发布订阅</p>
+</blockquote>
+<h5><span id="2redis相比memcached有哪些优势">2.Redis相比memcached有哪些优势</span></h5>
+<ul>
+<li>memcached所有的值均是简单的字符串，redis作为其替代者，支持更为丰富的数据类型</li>
+<li>redis的速度比memcached快很多</li>
+<li>redis可以持久化其数据</li>
+</ul>
+<h5><span id="3redis是单线程">3.Redis是单线程</span></h5>
+<p>redis利用队列技术将并发访问变为串行访问，消除了传统数据库串行控制的开销</p>
+<h5><span id="4reids常用5种数据类型">4.Reids常用5种数据类型</span></h5>
+<p>string，list，set，sorted set，hash<br>
+<img src="../img/redis-all/1729416702403.jpg" alt=" "></p>
+<blockquote>
+<p>redis内部使用一个redisObject对象来表示所有的key和value，redisObject最主要的信息如上图所示：type表示一个value对象具体是何种数据类型，encoding是不同数据类型在redis内部的存储方式。比如：type=string表示value存储的是一个普通字符串，那么encoding可以是raw或者int。</p>
+</blockquote>
+<p><strong>类型以及使用场景</strong></p>
+<ul>
+<li>
+<p>string是redis最基本的类型，可以理解成与memcached一模一样的类型，一个key对应一个value</p>
+</li>
+<li>
+<p>Hash是一个键值（key-value）的集合。redis的hash是一个string的key和value的映射表，Hash特别适合存储对象</p>
+</li>
+<li>
+<p>list列表是简单的字符串列表，按照插入顺序排序<br>
+应用场景：list应用场景非常多，也是Redis最重要的数据结构之一，比如twitter的关注列表，粉丝列表都可以用list结构来实现。数据结构：list就是链表，可以用来当消息队列用。redis提供了List的push和pop操作，还提供了操作某一段的api，可以直接查询或者删除某一段的元素。实现方式：redis list的是实现是一个双向链表，既可以支持反向查找和遍历，更方便操作，不过带来了额外的内存开销。</p>
+</li>
+<li>
+<p>set是string类型的无序集合。集合是通过hashtable实现的。set中的元素是没有顺序的，而且是没有重复的。应用场景：redis set对外提供的功能和list一样是一个列表，特殊之处在于set是自动去重的，而且set提供了判断某个成员是否在一个set集合中。</p>
+</li>
+<li>
+<p>zset和set一样是string类型元素的集合，且不允许重复的元素<br>
+使用场景：sorted set可以通过用户额外提供一个优先级（score）的参数来为成员排序，并且是插入有序的，即自动排序</p>
+</li>
+<li>
+<p>实现方式：Redis sorted set的内部使用HashMap和跳跃表(skipList)来保证数据的存储和有序，HashMap里放的是成员到score的映射，而跳跃表里存放的是所有的成员，排序依据是HashMap里存的score，使用跳跃表的结构可以获得比较高的查找效率，并且在实现上比较简单。</p>
+</li>
+</ul>
+<p><img src="../img/redis-all/1729416756963.jpg" alt=" "></p>
+<h5><span id="6reids6种淘汰策略">6.Reids6种淘汰策略</span></h5>
+<ul>
+<li><strong>noeviction</strong>: 不删除策略, 达到最大内存限制时, 如果需要更多内存, 直接返回错误信息。大多数写命令都会导致占用更多的内存(有极少数会例外。</li>
+<li><strong>allkeys-lru</strong>：所有key通用; 优先删除最近最少使用(less recently used ,LRU) 的 key。</li>
+<li><strong>volatile-lru</strong>：只限于设置了 expire 的部分; 优先删除最近最少使用(less recently used ,LRU) 的 key。</li>
+<li><strong>allkeys-random</strong>：所有key通用; 随机删除一部分 key。</li>
+<li><strong>volatile-random</strong>: 只限于设置了 expire 的部分; 随机删除一部分 key。</li>
+<li><strong>volatile-ttl</strong>: 只限于设置了 expire 的部分; 优先删除剩余时间(time to live,TTL) 短的key。<br>
+<img src="../img/redis-all/1729416796666.jpg" alt=" "></li>
+</ul>
+<h5><span id="7redis的并发竞争问题如何解决">7.Redis的并发竞争问题如何解决</span></h5>
+<p>单进程单线程模式，采用队列模式将并发访问变为串行访问。Redis本身没有锁的概念，Redis对于多个客户端连接并不存在竞争，利用setnx实现锁。</p>
+<h5><span id="8redis-持久化方案">8.Redis 持久化方案：</span></h5>
+<p><strong>Rdb 和 Aof</strong></p>
+<ol>
+<li>RDB：快照形式是直接把内存中的数据保存到一个dump的文件中，定时保存，保存策略。</li>
+<li>AOF：把所有的对Redis的服务器进行修改的命令都存到一个文件里，命令的集合</li>
+</ol>
+<p>Redis默认是快照RDB的持久化方式。当Redis重启的时候，它会优先使用AOF文件来还原数据集，因为AOF文件保存的数据集通常比RDB文件所保存的数据集更完整。你甚至可以关闭持久化功能，让数据只在服务器运行时存。</p>
+<p><strong>RDB是怎么工作的</strong></p>
+<blockquote>
+<p>当Redis需要做持久化时，Redis会fork一个子进程，子进程将数据写到磁盘上一个临时RDB文件中。当子进程完成写临时文件后，将原来的RDB替换掉，这样的好处是可以copy-on-write。</p>
+</blockquote>
+<p><strong>RDB的优点</strong></p>
+<blockquote>
+<p>这种文件非常适合用于备份：比如，你可以在最近的24小时内，每小时备份一次，并且在每个月的每一天也备份一个RDB文件。这样的话，即使遇上问题，也可以随时将数据集还原到不同的版本。RDB非常适合灾难恢复。</p>
+</blockquote>
+<p><strong>RDB的缺点</strong></p>
+<blockquote>
+<p>如果你需要尽量避免在服务器故障时丢失数据，那么RDB不合适你。</p>
+</blockquote>
+<p><strong>AOF</strong></p>
+<blockquote>
+<p>redis每执行一个修改数据的命令，都会把它添加到AOF文件中</p>
+</blockquote>
+<p><strong>AOF的优点</strong></p>
+<blockquote>
+<p>会让redis变得非常耐久。可以设置不同的fsync策略，aof的默认策略是每秒钟fsync一次，在这种配置下，就算发生故障停机，也最多丢失一秒钟的数据。</p>
+</blockquote>
+<p><strong>AOF的缺点</strong></p>
+<blockquote>
+<p>对于相同的数据集来说，AOF的文件体积通常要大于RDB文件的体积。根据所使用的fsync策略，AOF的速度可能会慢于RDB。</p>
+</blockquote>
+<p><strong>AOF和RDB选择</strong></p>
+<blockquote>
+<p>如果你非常关心你的数据，但仍然可以承受数分钟内的数据丢失，那么可以额只使用RDB持久。AOF将Redis执行的每一条命令追加到磁盘中，处理巨大的写入会降低Redis的性能，不知道你是否可以接受。数据库备份和灾难恢复：定时生成RDB快照非常便于进行数据库备份，并且RDB恢复数据集的速度也要比AOF恢复的速度快。当然了，redis支持同时开启RDB和AOF，系统重启后，redis会优先使用AOF来恢复数据，这样丢失的数据会最少。</p>
+</blockquote>
+<h5><span id="9redis是单线程的但redis为什么这么快">9.Redis是单线程的，但Redis为什么这么快</span></h5>
+<ul>
+<li>完全基于内存，绝大部分请求是纯粹的内存操作，非常快速。数据存在内存中，类似于HashMap，HashMap的优势就是查找和操作的时间复杂度都是O(1)；</li>
+<li>数据结构简单，对数据操作也简单，Redis中的数据结构是专门进行设计的；</li>
+<li>采用单线程，避免了不必要的上下文切换和竞争条件，也不存在多进程或者多线程导致的切换而消耗 CPU，不用去考虑各种锁的问题，不存在加锁释放锁操作，没有因为可能出现死锁而导致的性能消耗；</li>
+<li>使用多路I/O复用模型，非阻塞IO；这里“多路”指的是多个网络连接，“复用”指的是复用同一个线程</li>
+<li>使用底层模型不同，它们之间底层实现方式以及与客户端之间通信的应用协议不一样，Redis直接自己构建了VM 机制 ，因为一般的系统调用系统函数的话，会浪费一定的时间去移动和请求；</li>
+</ul>
+<h5><span id="10为什么redis是单线程的">10.为什么Redis是单线程的</span></h5>
+<p>Redis是基于内存的操作，CPU不是Redis的瓶颈，Redis的瓶颈最有可能是机器内存的大小或者网络带宽</p>
+<h5><span id="11rdb和aof的优缺点">11.RDB和AOF的优缺点</span></h5>
+<p><strong>RDB持久化</strong></p>
+<blockquote>
+<p><strong>优点</strong>：RDB文件紧凑，体积小，网络传输快，适合全量复制；恢复速度比AOF快很多。当然，与AOF相比，RDB最重要的优点之一是对性能的影响相对较小。<br>
+<strong>缺点</strong>：RDB文件的致命缺点在于其数据快照的持久化方式决定了必然做不到实时持久化，而在数据越来越重要的今天，数据的大量丢失很多时候是无法接受的，因此AOF持久化成为主流。此外，RDB文件需要满足特定格式，兼容性差（如老版本的Redis不兼容新版本的RDB文件）。</p>
+</blockquote>
+<p><strong>AOF持久化</strong></p>
+<blockquote>
+<p>与RDB持久化相对应，AOF的优点在于支持秒级持久化、兼容性好，缺点是文件大、恢复速度慢、对性能影响大。</p>
+</blockquote>
+<h5><span id="12持久化策略选择">12.持久化策略选择</span></h5>
+<ul>
+<li>如果Redis中的数据完全丢弃也没有关系（如Redis完全用作DB层数据的cache），那么无论是单机，还是主从架构，都可以不进行任何持久化。</li>
+<li>在单机环境下（对于个人开发者，这种情况可能比较常见），如果可以接受十几分钟或更多的数据丢失，选择RDB对Redis的性能更加有利；如果只能接受秒级别的数据丢失，应该选择AOF。</li>
+<li>但在多数情况下，我们都会配置主从环境，slave的存在既可以实现数据的热备，也可以进行读写分离分担Redis读请求，以及在master宕掉后继续提供服务。</li>
+</ul>
+<h5><span id="13redis缓存被击穿处理机制">13.redis缓存被击穿处理机制</span></h5>
+<blockquote>
+<p>使用mutex。简单地来说，就是在缓存失效的时候（判断拿出来的值为空），不是立即去load db，而是先使用缓存工具的某些带成功操作返回值的操作（比如Redis的SETNX或者Memcache的ADD）去set一个mutex key，当操作返回成功时，再进行load db的操作并回设缓存；否则，就重试整个get缓存的方法</p>
+</blockquote>
+<h5><span id="14为什么需要持久化">14.为什么需要持久化？</span></h5>
+<blockquote>
+<p>由于Redis是一种内存型数据库，即服务器在运行时，系统为其分配了一部分内存存储数据，一旦服务器挂了，或者突然宕机了，那么数据库里面的数据将会丢失，为了使服务器即使突然关机也能保存数据，必须通过持久化的方式将数据从内存保存到磁盘中。</p>
+</blockquote>
+<h5><span id="15缓存和数据库间数据一致性问题">15.缓存和数据库间数据一致性问题</span></h5>
+<blockquote>
+<p>分布式环境下（单机就不用说了）非常容易出现缓存和数据库间的数据一致性问题，如果你的项目对缓存的要求是强一致性的，那么请不要使用缓存。<br>
+我们只能采取合适的策略来降低缓存和数据库间数据不一致的概率，而无法保证两者间的强一致性。合适的策略包括 合适的缓存更新策略，更新数据库后要及时更新缓存、缓存失败时增加重试机制，例如MQ模式的消息队列。</p>
+</blockquote>
+<h5><span id="16布隆过滤器">16.布隆过滤器</span></h5>
+<blockquote>
+<p>bloomfilter就类似于一个hash set，用于快速判某个元素是否存在于集合中，其典型的应用场景就是快速判断一个key是否存在于某容器，不存在就直接返回。布隆过滤器的关键就在于hash算法和容器大小</p>
+</blockquote>
+<h5><span id="17缓存雪崩问题">17.缓存雪崩问题</span></h5>
+<blockquote>
+<p>存在同一时间内大量键过期（失效），接着来的一大波请求瞬间都落在了数据库中导致连接异常。</p>
+</blockquote>
+<p><strong>解决方案</strong></p>
+<ol>
+<li>把每个Key的失效时间都加个随机值就好了，这样可以保证数据不会再同一时间大面积失效</li>
+<li>如果Redis是集群部署，将热点数据均匀分布在不同的Redis库中也能避免全部失效。或者设置热点数据永不过期，有更新操作就更新缓存就好了</li>
+</ol>
+<h5><span id="18缓存并发问题">18.缓存并发问题</span></h5>
+<p>这里的并发指的是多个redis的client同时set key引起的并发问题。<br>
+比较有效的解决方案就是把redis.set操作放在队列中使其串行化，必须的一个一个执行，加锁也是可以的，事务不支持回滚，所以不用redis中的事务</p>
+<h5><span id="19redis分布式">19.Redis分布式</span></h5>
+<p>redis支持主从的模式。<br>
+原则：Master会将数据同步到slave，而slave不会将数据同步到master。Slave启动时会连接master来同步数据。</p>
+<p>这是一个典型的分布式读写分离模型。我们可以利用master来插入数据，slave提供检索服务。这样可以有效减少单个机器的并发访问数量</p>
+<h5><span id="20-redis常见性能问题和解决方案">20. redis常见性能问题和解决方案</span></h5>
+<ul>
+<li>Master最好不要做任何持久化工作，如RDB内存快照和AOF日志文件</li>
+<li>如果数据比较重要，某个Slave开启AOF备份数据，策略设置为每秒同步一次</li>
+<li>为了主从复制的速度和连接的稳定性，Master和Slave最好在同一个局域网内</li>
+<li>尽量避免在压力很大的主库上增加从库</li>
+</ul>
+<h5><span id="21redis通讯协议">21.redis通讯协议</span></h5>
+<ul>
+<li>RESP 是redis客户端和服务端之前使用的一种通讯协议；</li>
+<li>RESP 的特点：实现简单、快速解析、可读性好</li>
+</ul>
+<h5><span id="22redis分布式锁实现">22.Redis分布式锁实现</span></h5>
+<p>先拿setnx来争抢锁，抢到之后，再用expire给锁加一个过期时间防止锁忘记了释放。</p>
+<h5><span id="23redis中海量数据的正确操作方式">23.Redis中海量数据的正确操作方式</span></h5>
+<p>利用SCAN系列命令（SCAN、SSCAN、HSCAN、ZSCAN）完成数据迭代。</p>
+<h5><span id="24redis-中设置过期时间主要通过以下四种方式">24.Redis 中设置过期时间主要通过以下四种方式</span></h5>
+<ul>
+<li>expire key seconds：设置 key 在 n 秒后过期；</li>
+<li>pexpire key milliseconds：设置 key 在 n 毫秒后过期；</li>
+<li>expireat key timestamp：设置 key 在某个时间戳（精确到秒）之后过期；</li>
+<li>pexpireat key millisecondsTimestamp：设置 key 在某个时间戳（精确到毫秒）之后过期；</li>
+</ul>
+<h5><span id="25reids三种不同删除策略">25.Reids三种不同删除策略</span></h5>
+<ul>
+<li>定时删除：在设置键的过期时间的同时，创建一个定时任务，当键达到过期时间时，立即执行对键的删除操作</li>
+<li>惰性删除：放任键过期不管，但在每次从键空间获取键时，都检查取得的键是否过期，如果过期的话，就删除该键，如果没有过期，就返回该键</li>
+<li>定期删除：每隔一点时间，程序就对数据库进行一次检查，删除里面的过期键，至于要删除多少过期键，以及要检查多少个数据库，则由算法决定。</li>
+</ul>
+<h5><span id="26定时删除">26.定时删除</span></h5>
+<blockquote>
+<p><strong>优点</strong>：对内存友好，定时删除策略可以保证过期键会尽可能快地被删除，并释放过期所占用的内存<br>
+<strong>缺点</strong>：对cpu时间不友好，在过期键比较多时，删除任务会占用很大一部分cpu时间，在内存不紧张但cpu时间紧张的情况下，将cpu时间用在删除和当前任务无关的过期键上，影响服务器的响应时间和吞吐量</p>
+</blockquote>
+<h5><span id="27定期删除">27.定期删除</span></h5>
+<blockquote>
+<p>由于定时删除会占用太多cpu时间，影响服务器的响应时间和吞吐量以及惰性删除浪费太多内存，有内存泄露的危险，所以出现一种整合和折中这两种策略的定期删除策略。</p>
+</blockquote>
+<ol>
+<li>定期删除策略每隔一段时间执行一次删除过期键操作，并通过限制删除操作执行的时长和频率来减少删除操作对CPU时间的影响。</li>
+<li>定时删除策略有效地减少了因为过期键带来的内存浪费。</li>
+</ol>
+<h5><span id="28惰性删除">28.惰性删除</span></h5>
+<blockquote>
+<p><strong>优点</strong>：对cpu时间友好，在每次从键空间获取键时进行过期键检查并是否删除，删除目标也仅限当前处理的键，这个策略不会在其他无关的删除任务上花费任何cpu时间。<br>
+<strong>缺点</strong>：对内存不友好，过期键过期也可能不会被删除，导致所占的内存也不会释放。甚至可能会出现内存泄露的现象，当存在很多过期键，而这些过期键又没有被访问到，这会可能导致它们会一直保存在内存中，造成内存泄露。</p>
+</blockquote>
+<h5><span id="29redis常见的几种缓存策略">29.Redis常见的几种缓存策略</span></h5>
+<ul>
+<li>Cache-Aside</li>
+<li>Read-Through</li>
+<li>Write-Through</li>
+<li>Write-Behind</li>
+</ul>
+<h5><span id="30-缓存击穿">30、缓存击穿</span></h5>
+<blockquote>
+<p>缓存击穿是指一个Key非常热点，在不停地扛着大量的请求，大并发集中对这一个点进行访问，当这个Key在失效的瞬间，持续的大并发直接落到了数据库上，就在这个Key的点上击穿了缓存。</p>
+</blockquote>
+<p><strong>解决方案</strong><br>
+设置热点数据永不过期，或者加上互斥锁就搞定了</p>
+<p>31、缓存穿透</p>
+<blockquote>
+<p>缓存穿透是指缓存和数据库中都没有的数据，而用户（黑客）不断发起请求，举个栗子：我们数据库的id都是从1自增的，如果发起id=-1的数据或者id特别大不存在的数据，这样的不断攻击导致数据库压力很大，严重会击垮数据库。</p>
+</blockquote>
+<p><strong>解决方案</strong></p>
+<ul>
+<li>缓存穿透我会在接口层增加校验，比如用户鉴权，参数做校验，不合法的校验直接return，比如id做基础校验，id&lt;=0直接拦截。</li>
+<li>布隆过滤器：利用高效的数据结构和算法快速判断出你这个Key是否在数据库中存在，不存在你return就好了，存在你就去查DB刷新KV再return</li>
+</ul>
+<h5><span id="31-主从复制">31、主从复制</span></h5>
+<p><strong>复制过程</strong></p>
+<ol>
+<li>从节点执行slaveof[masterIP][masterPort]，保存主节点信息</li>
+<li>从节点中的定时任务发现主节点信息，建立和主节点的socket连接</li>
+<li>从节点发送Ping信号，主节点返回Pong，两边能互相通信</li>
+<li>连接建立后，主节点将所有数据发送给从节点（数据同步）</li>
+<li>主节点把当前的数据同步给从节点后，便完成了复制的建立过程。接下来，主节点就会持续的把写命令发送给从节点，保证主从数据一致性。</li>
+</ol>
+<p><strong>主从复制存在的问题</strong></p>
+<ol>
+<li>一旦主节点宕机，从节点晋升为主节点，同时需要修改应用方的主节点地址，还需要命令所有从节点去复制新的主节点，整个过程需要人工干预。</li>
+<li>主节点的写能力受到单机的限制。</li>
+<li>主节点的存储能力受到单机的限制。</li>
+<li>原生复制的弊端在早期的版本中也会比较突出，比如：redis复制中断后，从节点会发起psync。此时如果同步不成功，则会进行全量同步，主库执行全量备份的同时，可能会造成毫秒或秒级的卡顿。</li>
+</ol>
+<p><strong>主从复制比较主流的解决方案</strong><br>
+哨兵机制</p>
+<p><img src="../img/redis-all/1729416857327.jpg" alt=" "></p>
+<p><strong>哨兵的工作原理</strong></p>
+<ol>
+<li>
+<p>每个Sentinel节点都需要定期执行以下任务：每个Sentinel以每秒一次的频率，向它所知的主服务器、从服务器以及其他的Sentinel实例发送一个PING命令。<img src="../img/redis-all/1729416893339.jpg" alt=" "></p>
+</li>
+<li>
+<p>如果一个实例距离最后一次有效回复PING命令的时间超过down-after-milliseconds所指定的值，那么这个实例会被Sentinel标记为主观下线。<img src="../img/redis-all/1729416974061.jpg" alt=" "></p>
+</li>
+<li>
+<p>如果一个主服务器被标记为主观下线，那么正在监视这个服务器的所有Sentinel节点，要以每秒一次的频率确认主服务器的确进入了主观下线状态。<img src="../img/redis-all/1729416987784.jpg" alt=" "></p>
+</li>
+<li>
+<p>如果一个主服务器被标记为主观下线，并且有足够数量的Sentinel（至少要达到配置文件指定的数量）在指定的时间范围内同意这一判断，那么这个主服务器被标记为客观下线。<img src="../img/redis-all/1729417010766.jpg" alt=" "></p>
+</li>
+<li>
+<p>一般情况下，每个Sentinel会以每10秒一次的频率向它已知的所有主服务器和从服务器发送INFO命令，当一个主服务器被标记为客观下线时，Sentinel向下线主服务器的所有从服务器发送INFO命令的频率，会从10秒一次改为每秒一次。<img src="../img/redis-all/1729417025748.jpg" alt=" "></p>
+</li>
+<li>
+<p>Sentinel和其他Sentinel协商客观下线的主节点的状态，如果处于SDOWN状态，则投票自动选出新的主节点，将剩余从节点指向新的主节点进行数据复制。<img src="../img/redis-all/1729417049013.jpg" alt=" "></p>
+</li>
+<li>
+<p>当没有足够数量的Sentinel同意主服务器下线时，主服务器的客观下线状态就会被移除。当主服务器重新向Sentinel的PING命令返回有效回复时，主服务器的主观下线状态就会被移除。</p>
+</li>
+</ol>
+<h5><span id="redis并发竞争key的解决方案">Redis并发竞争key的解决方案</span></h5>
+<p>分布式锁+时间戳<br>
+利用消息队列</p>
+<h5><span id="redis中的hash扩容-渐进式rehash过程">redis中的hash扩容、渐进式rehash过程</span></h5>
+<p>redis字典（hash表）当数据越来越多的时候，就会发生扩容，也就是rehash<br>
+对比：java中的hashmap，当数据数量达到阈值的时候(0.75)，就会发生rehash，hash表长度变为原来的二倍，将原hash表数据全部重新计算hash地址，重新分配位置，达到rehash目的redis中的hash表采用的是渐进式hash的方式：1、redis字典（hash表）底层有两个数组，还有一个rehashidx用来控制rehash<br>
+<img src="../img/redis-all/1729417110185.jpg" alt=" "></p>
+<p>2、初始默认hash长度为4，当元素个数与hash表长度一致时，就发生扩容，hash长度变为原来的二倍<br>
+<img src="../img/redis-all/1729417125377.jpg" alt=" "></p>
+<p>3、redis中的hash则是执行的单步rehash的过程：<br>
+<img src="../img/redis-all/1729417149672.jpg" alt=" "></p>
+<p>每次的增删改查，rehashidx+1，然后执行对应原hash表rehashidx索引位置的rehash</p>
+<p><strong>总结</strong></p>
+<blockquote>
+<p>在扩容和收缩的时候，如果哈希字典中有很多元素，一次性将这些键全部rehash到ht[1]的话，可能会导致服务器在一段时间内停止服务。所以，采用渐进式rehash的方式，详细步骤如下：</p>
+</blockquote>
+<ol>
+<li>为ht[1]分配空间，让字典同时持有ht[0]和ht[1]两个哈希表</li>
+<li>将rehashindex的值设置为0，表示rehash工作正式开始</li>
+<li>在rehash期间，每次对字典执行增删改查操作是，程序除了执行指定的操作以外，还会顺带将ht[0]哈希表在rehashindex索引上的所有键值对rehash到ht[1]，当rehash工作完成以后，rehashindex的值+1</li>
+<li>随着字典操作的不断执行，最终会在某一时间段上ht[0]的所有键值对都会被rehash到ht[1]，这时将rehashindex的值设置为-1，表示rehash操作结束</li>
+</ol>
+<p>渐进式rehash采用的是一种分而治之的方式，将rehash的操作分摊在每一个的访问中，避免集中式rehash而带来的庞大计算量。<br>
+需要注意的是在渐进式rehash的过程，如果有增删改查操作时，如果index大于rehashindex，访问ht[0]，否则访问ht[1]。</p>
+<h5><span id="redis锁的过期时间小于业务的执行时间该如何续期">Redis锁的过期时间小于业务的执行时间该如何续期？</span></h5>
+<p>思路一：任务执行的时候，开辟一个守护线程，在守护线程中每隔一段时间重新设置过期时间。<br>
+思路二：通过Redisson中的看门狗来实现。</p>
+<h5><span id="分布式redis的原理">分布式Redis的原理</span></h5>
+<p>Redis是以哈希槽的形式对集群进行划分的，整个集群的哈希槽一共有16384个，在有3个Redis实例的情况下，节点A包含从0到5500的哈希槽，节点B包含从5501到11000 的哈希槽，节点C包含从11001到16384的哈希槽。当有新的节点添加进来的时候，会从当前的各个节点中选取一定的槽分配给新添加的节点，当有节点从集群中被删除时，则会将当前节点的槽分配给集群中其他正在运行的节点。每当有新的key添加到Redis中时，会根据算法算出相应的哈希槽来找到对应的集群节点。</p>
+<h5><span id="锁的原理">锁的原理</span></h5>
+<p>在Redisson中，使用key来作为是否上锁的标志，当通过getLock(String key)方法获得相应的锁之后，这个key即作为一个锁存储到Redis集群中，在接下来如果有其他的线程尝试获取名为key的锁时，便会向集群中进行查询，如果能够查到这个锁并发现相应的value的值不为0，则表示已经有其他线程申请了这个锁同时还没有释放，则当前线程进入阻塞，否则由当前线程获取这个锁并将value值加一，如果是可重入锁的话，则当前线程每获得一个自身线程的锁，就将value的值加一，而每释放一个锁则将value值减一，直到减至0，完全释放这个锁。因为底层是基于分布式的Redis集群，所以Redisson实现了分布式的锁机制。</p>
+<blockquote>
+<p>图片来源网络,侵权删除.</p>
+</blockquote>
+</div><div class="tags"></div><div class="post-nav"><a class="pre" href="/liuzexin.github.io/sort-all/">排序算法汇总</a><a class="next" href="/liuzexin.github.io/linux-system-knowlege/">Linux 系统机制总结</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://liuzexin.github.io/liuzexin.github.io"/></form></div><div class="widget"><div class="author-info"><a class="info-avatar" href="/about/" title="关于"><img class="nofancybox" src="/img/avatar.jpg"/></a><p>Stay foolish, stay hungry.</p><a class="info-icon" href="https://github.com/liuzexin" title="Github" target="_blank" style="margin-inline:5px"> <i class="fa fa-github-square" style="margin-inline:5px"></i></a><a class="info-icon" href="https://blog.csdn.net/lzx_victory?type=blog" title="CSDN" target="_blank" style="margin-inline:5px"> <i class="fa fa-CSDN-square" style="margin-inline:5px"></i></a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/liuzexin.github.io/tags/%E7%AE%97%E6%B3%95/" style="font-size: 15px;">算法</a> <a href="/liuzexin.github.io/tags/C/" style="font-size: 15px;">C++</a> <a href="/liuzexin.github.io/tags/pyton/" style="font-size: 15px;">pyton</a> <a href="/liuzexin.github.io/tags/%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B-%E5%8D%8F%E7%A8%8B/" style="font-size: 15px;">线程,进程,协程</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/how-to-write-better-golang-code/">如何写好Golang 代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/qqnews-bottompage-upgrade/">腾讯新闻底层页升级技术总结</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/deep-learing-math/">读《深度学习的数学》 笔记-涌井良美</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/python-programing-py/">读《Python编程：从入门到实践》-埃里克·马瑟斯 笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/golang-good-code/">如何真正写好Golang代码？</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary4/">C++ PART4 11新语法特性</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary3/">C++ PART3 模版和泛型</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary2/">C++ PART2 面相对象-类</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/cpp-summary1/">C++ PART1 基础语法</a></li><li class="post-list-item"><a class="post-list-link" href="/liuzexin.github.io/kmp/">KMP算法实现思路</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2024 <a href="/liuzexin.github.io/." rel="nofollow">Eddison.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><script type="text/javascript" src="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/liuzexin.github.io/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="https://unpkg.com/@fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/liuzexin.github.io/js/copycode.js?v=1.0.0" successtext="复制成功！"></script><link rel="stylesheet" type="text/css" href="/liuzexin.github.io/css/copycode.css?v=1.0.0"><script type="text/javascript" src="/liuzexin.github.io/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/liuzexin.github.io/js/smartresize.js?v=1.0.0"></script></div></body></html>
